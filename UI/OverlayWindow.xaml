@@ -1,0 +1,23 @@
+<Window x:Class="SimTelemetry.UI.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:SimTelemetry.UI"
+        Title="SimTelemetry Overlay"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" ShowActivated="False" ResizeMode="NoResize"
+        Width="460" Height="140" MinWidth="120" MinHeight="50">
+    <Grid>
+        <ui:PedalOverlayControl x:Name="Pedals" />
+
+        <!-- Sólo visible en modo edición: marco, tiradores y ayuda -->
+        <Grid x:Name="EditFrame" Visibility="Collapsed" Background="#01000000">
+            <Border BorderThickness="2" CornerRadius="8" BorderBrush="{StaticResource OverlayAccent}" />
+            <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14,4,14,0" Padding="6,1"
+                    Background="{StaticResource EditHint}" CornerRadius="3" IsHitTestVisible="False">
+                <TextBlock x:Name="EditHint" FontSize="10" Foreground="{StaticResource EditHintText}" FontWeight="SemiBold"
+                           Text="Arrastra · bordes = tamaño · rueda = escala" TextTrimming="CharacterEllipsis" />
+            </Border>
+            <Canvas x:Name="Handles" IsHitTestVisible="False" />
+        </Grid>
+    </Grid>
+</Window>

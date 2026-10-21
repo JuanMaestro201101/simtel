@@ -1,0 +1,937 @@
+<Window x:Class="SimTelemetry.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:SimTelemetry.UI"
+        Title="SimTelemetry" Width="1400" Height="840" MinWidth="1120" MinHeight="620"
+        Background="{DynamicResource Bg}" FontFamily="Segoe UI" FontSize="13"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Background="{DynamicResource Bg}">
+        <!-- Cabecera -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource Panel}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="18,10">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
+                    <Image x:Name="LogoImage" Width="28" Height="28" Margin="0,0,10,0" />
+                    <TextBlock Text="SimTelemetry" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
+                </StackPanel>
+                <Border DockPanel.Dock="Right" HorizontalAlignment="Right" Background="{DynamicResource PanelAlt}" CornerRadius="14" Padding="12,5">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse x:Name="StatusDot" Width="10" Height="10" Fill="{DynamicResource Off}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="StatusText" Text="Esperando un juego…" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="28,0,12,0">
+                    <TextBlock Text="Perfil" Style="{StaticResource DimText}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <WrapPanel x:Name="ProfileChips" VerticalAlignment="Center" />
+                    <TextBlock x:Name="ProfileNote" Foreground="{DynamicResource Accent}" FontSize="11" VerticalAlignment="Center" Margin="2,0,10,0" />
+                    <CheckBox x:Name="AutoProfileCheck" Content="Cambiar solo al abrir un juego" FontSize="12" VerticalAlignment="Center" Margin="0"
+                              Checked="OnAutoProfileChanged" Unchecked="OnAutoProfileChanged" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <TabControl x:Name="Tabs" Margin="10,0,14,14" Padding="14,0,0,0" SelectionChanged="OnTabChanged" TabStripPlacement="Left" ItemContainerStyle="{StaticResource NavTab}">
+            <!-- ======================= EN VIVO ======================= -->
+            <TabItem x:Name="TabLive" Header="🏁  En vivo" Tag="CONDUCIR">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="400" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <Border x:Name="OnboardingCard" Style="{StaticResource Card}" Visibility="Collapsed" BorderBrush="{DynamicResource Accent}" BorderThickness="1">
+                            <StackPanel>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="Ocultar" Padding="8,2" Margin="0" Click="OnOnboardingHide" />
+                                    <TextBlock Text="Primeros pasos" Style="{StaticResource H2}" />
+                                </DockPanel>
+                                <ItemsControl x:Name="OnboardingSteps">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,3,0,3">
+                                                <Button DockPanel.Dock="Right" Content="{Binding Action}" Tag="{Binding Target}" Visibility="{Binding ActionVisibility}" Padding="8,2" Margin="8,0,0,0" Click="OnOnboardingAction" />
+                                                <TextBlock Text="{Binding Icon}" Foreground="{Binding IconBrush}" FontWeight="Bold" Width="22" />
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource DimText}" FontSize="12" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock x:Name="LiveGame" Text="Ningún juego conectado" FontSize="22" FontWeight="SemiBold" />
+                                <TextBlock x:Name="LiveTrack" Style="{StaticResource DimText}" Margin="0,2,0,14" TextWrapping="Wrap" Text="Abre un juego compatible y sal a pista." />
+                                <UniformGrid Columns="5" Margin="0,0,0,14">
+                                    <StackPanel>
+                                        <TextBlock Text="Velocidad" Style="{StaticResource DimText}" />
+                                        <TextBlock x:Name="LiveSpeed" Text="--" FontSize="28" FontWeight="Bold" />
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="Marcha" Style="{StaticResource DimText}" />
+                                        <TextBlock x:Name="LiveGear" Text="-" FontSize="28" FontWeight="Bold" />
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="RPM" Style="{StaticResource DimText}" />
+                                        <TextBlock x:Name="LiveRpm" Text="--" FontSize="28" FontWeight="Bold" />
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="Vuelta / tramo" Style="{StaticResource DimText}" />
+                                        <TextBlock x:Name="LiveLapTime" Text="--" FontSize="28" FontWeight="Bold" />
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="Distancia" Style="{StaticResource DimText}" />
+                                        <TextBlock x:Name="LiveDistance" Text="--" FontSize="28" FontWeight="Bold" />
+                                    </StackPanel>
+                                </UniformGrid>
+                                <DockPanel Margin="0,0,0,6">
+                                    <TextBlock x:Name="LivePedalSource" DockPanel.Dock="Right" Style="{StaticResource DimText}" />
+                                    <TextBlock Text="Acelerador y freno (así se verá el overlay)" Style="{StaticResource DimText}" />
+                                </DockPanel>
+                                <Border Background="{StaticResource OverlayPanel}" CornerRadius="8">
+                                    <ui:PedalOverlayControl x:Name="LivePedals" Height="170" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="SessionCard" Style="{StaticResource Card}" Visibility="Collapsed">
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="Ver guía del circuito" VerticalAlignment="Top" Click="OnOpenTrackGuide" />
+                                <StackPanel>
+                                    <TextBlock Text="Sesión actual" Style="{StaticResource H2}" />
+                                    <TextBlock x:Name="SessionTitle" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock x:Name="SessionHeadline" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    <TextBlock x:Name="SessionRanking" Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Grabación" Style="{StaticResource H2}" />
+                                <CheckBox x:Name="RecordCheck" Content="Grabar vueltas y tramos automáticamente" Checked="OnRecordChanged" Unchecked="OnRecordChanged" />
+                                <TextBlock x:Name="RecordStatus" Style="{StaticResource DimText}" Text="" Margin="0,0,0,4" />
+                                <TextBlock x:Name="LastLapText" Text="" Margin="0,0,0,10" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Abrir carpeta de datos" Click="OnOpenDataFolder" />
+                                    <Button Content="Ver análisis" Click="OnGoToAnalysis" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" Style="{StaticResource Card}" VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Text="Juegos" Style="{StaticResource H2}" />
+                            <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                       Text="SimTelemetry escucha todos los juegos a la vez y usa el que esté enviando datos." />
+                            <ItemsControl x:Name="SourceList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource PanelAlt}" CornerRadius="6" Padding="10,8" Margin="0,0,0,6">
+                                            <DockPanel>
+                                                <Ellipse DockPanel.Dock="Left" Width="9" Height="9" Margin="0,5,10,0" VerticalAlignment="Top" Fill="{Binding DotBrush}" />
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding Status}" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" />
+                                                    <TextBlock Text="{Binding Packets}" Style="{StaticResource DimText}" FontSize="11" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ======================= INGENIERO ======================= -->
+            <TabItem x:Name="TabEngineer" Header="🎧  Ingeniero">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,12,0">
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Ingeniero de carrera" Style="{StaticResource H2}" />
+                                    <CheckBox x:Name="EngEnabled" Checked="OnEngineerOptionChanged" Unchecked="OnEngineerOptionChanged">
+                                        <TextBlock TextWrapping="Wrap" Text="Activar el ingeniero (te habla por los auriculares mientras conduces)" />
+                                    </CheckBox>
+                                    <CheckBox x:Name="EngBeeps" Content="Pitidos antes de cada frenada: bip · bip · biiip = ¡frena!" Checked="OnEngineerOptionChanged" Unchecked="OnEngineerOptionChanged" />
+                                    <CheckBox x:Name="EngVoice" Checked="OnEngineerOptionChanged" Unchecked="OnEngineerOptionChanged">
+                                        <TextBlock TextWrapping="Wrap" Text="Voz: intensidad y marcha de cada curva, tiempo de vuelta, dónde pierdes y presiones" />
+                                    </CheckBox>
+                                    <CheckBox x:Name="EngRallyCalls" Checked="OnEngineerOptionChanged" Unchecked="OnEngineerOptionChanged">
+                                        <TextBlock TextWrapping="Wrap" Text="En rally (DiRT Rally, EA WRC), también voz en las curvas («Fuerte 90»). Por defecto sólo pitidos: tu copiloto ya canta las notas y las voces se pisarían." />
+                                    </CheckBox>
+                                    <CheckBox x:Name="EngProgressive" Checked="OnEngineerOptionChanged" Unchecked="OnEngineerOptionChanged">
+                                        <TextBlock TextWrapping="Wrap" Text="Objetivo progresivo: en las curvas donde eres constante, el aviso llega unos metros más tarde que tu mejor vuelta (la mitad del margen que tu coche permite, como mucho 15 m). Cuando lo consigues, tu nueva mejor vuelta trae el siguiente paso." />
+                                    </CheckBox>
+                                    <TextBlock x:Name="EngVolumeLabel" Text="Volumen" Style="{StaticResource DimText}" Margin="0,8,0,0" />
+                                    <Slider x:Name="EngVolume" Minimum="0" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="OnEngineerVolumeChanged" />
+                                    <TextBlock x:Name="EngDelayLabel" Text="Adelanto de los avisos" Style="{StaticResource DimText}" />
+                                    <Slider x:Name="EngDelay" Minimum="0" Maximum="400" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="OnEngineerDelayChanged" />
+                                    <WrapPanel>
+                                        <Button Content="Auriculares con cable / USB" Tag="80" Padding="8,3" Click="OnEngineerDelayPreset" />
+                                        <Button Content="Auriculares Bluetooth" Tag="250" Padding="8,3" Click="OnEngineerDelayPreset" />
+                                    </WrapPanel>
+                                    <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,4"
+                                               Text="Los auriculares Bluetooth retrasan el sonido unos 0,2 s (a 250 km/h son 15 m). Este adelanto hace que el pitido largo suene justo en el punto de frenada." />
+                                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                        <Button Content="🔊  Probar sonido" Click="OnEngineerTest" />
+                                    </StackPanel>
+                                    <TextBlock x:Name="EngVoiceInfo" Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,2,0,0" />
+
+                                    <TextBlock Text="Voz del ingeniero" Style="{StaticResource DimText}" Margin="0,12,0,4" />
+                                    <WrapPanel x:Name="EngVoices" />
+                                    <TextBlock x:Name="EngRateLabel" Text="Velocidad de la voz" Style="{StaticResource DimText}" Margin="0,6,0,0" />
+                                    <Slider x:Name="EngRate" Minimum="80" Maximum="180" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="OnEngineerVoiceSlider" />
+                                    <TextBlock x:Name="EngPitchLabel" Text="Tono de la voz" Style="{StaticResource DimText}" />
+                                    <Slider x:Name="EngPitch" Minimum="70" Maximum="130" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="OnEngineerVoiceSlider" />
+                                    <WrapPanel>
+                                        <Button Content="Instalar más voces (Windows)" Padding="8,3" Click="OnInstallVoices" />
+                                        <Button Content="⟳ Actualizar lista" Padding="8,3" Click="OnRefreshVoices" />
+                                    </WrapPanel>
+                                    <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12"
+                                               Text="Las voces «clásicas» son las de siempre de Windows; las demás son las modernas (más naturales, y con los avisos de cada curva preparados de antemano para que suenen al instante). Para más voces en español (por ejemplo de España), instálalas en Windows y pulsa «Actualizar lista»." />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Cómo te ayuda" Style="{StaticResource H2}" />
+                                    <TextBlock TextWrapping="Wrap" LineHeight="20"
+                                               Text="Usa como referencia tu vuelta válida más rápida en ese circuito o tramo (con el mismo coche si la tienes). Unos 3 s antes de cada frenada te dice cuánto frenar y con qué presión de pedal, y la marcha de la curva: «Frena fuerte, 90 por ciento, segunda». Después suenan dos pitidos cortos (a 1 s y a 0,5 s) y uno largo justo donde frenaste en tu mejor vuelta: cuanto más agudo y largo, más fuerte la frenada." />
+                                    <TextBlock TextWrapping="Wrap" LineHeight="20" Margin="0,8,0,0"
+                                               Text="Al cruzar la meta te dice el tiempo, la diferencia con tu mejor vuelta y la curva donde más pierdes (frenas antes, pasas más lento…). En ACC también te avisa del combustible que queda y de las presiones. Cuando mejoras tu vuelta, los avisos pasan a usar la nueva." />
+                                    <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" LineHeight="19" Margin="0,8,0,0"
+                                               Text="Necesita un juego que envíe la distancia recorrida: ACC, Assetto Corsa, iRacing, DiRT Rally, EA WRC o Forza con «Data Out». En rally funciona como unas notas de frenada del tramo que ya corriste." />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Neumáticos (presión en caliente)" Style="{StaticResource H2}" />
+                                    <UniformGrid Columns="2" Width="260" HorizontalAlignment="Left">
+                                        <Border Background="{DynamicResource PanelAlt}" CornerRadius="6" Margin="0,0,6,6" Padding="10,6">
+                                            <StackPanel><TextBlock Text="Del. izq." Style="{StaticResource DimText}" /><TextBlock x:Name="TyreFL" Text="--" FontSize="22" FontWeight="Bold" /></StackPanel>
+                                        </Border>
+                                        <Border Background="{DynamicResource PanelAlt}" CornerRadius="6" Margin="0,0,0,6" Padding="10,6">
+                                            <StackPanel><TextBlock Text="Del. der." Style="{StaticResource DimText}" /><TextBlock x:Name="TyreFR" Text="--" FontSize="22" FontWeight="Bold" /></StackPanel>
+                                        </Border>
+                                        <Border Background="{DynamicResource PanelAlt}" CornerRadius="6" Margin="0,0,6,0" Padding="10,6">
+                                            <StackPanel><TextBlock Text="Tras. izq." Style="{StaticResource DimText}" /><TextBlock x:Name="TyreRL" Text="--" FontSize="22" FontWeight="Bold" /></StackPanel>
+                                        </Border>
+                                        <Border Background="{DynamicResource PanelAlt}" CornerRadius="6" Padding="10,6">
+                                            <StackPanel><TextBlock Text="Tras. der." Style="{StaticResource DimText}" /><TextBlock x:Name="TyreRR" Text="--" FontSize="22" FontWeight="Bold" /></StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                    <TextBlock x:Name="TyreInfo" Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                               Text="ACC: objetivo en seco 26,0–27,0 psi en caliente (GT3 y GT4). Cada 0,1 psi en frío cambia más o menos 0,1 psi en caliente; el ingeniero te avisa desde la segunda vuelta completa. Otros juegos no envían la presión." />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Plan de frenadas" Style="{StaticResource H2}" />
+                                    <TextBlock x:Name="EngPlanTitle" TextWrapping="Wrap" Text="Sin referencia: conduce y el ingeniero usará tu mejor vuelta." />
+                                    <TextBlock x:Name="EngNext" Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,4,0,8" />
+                                    <Border x:Name="EngPracticeBox" Visibility="Collapsed" Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,0,8">
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="Salir del modo práctica" Padding="8,2" Margin="0" Click="OnPracticeStop" />
+                                            <TextBlock x:Name="EngPracticeText" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                        </DockPanel>
+                                    </Border>
+                                    <ItemsControl x:Name="EngCues">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource PanelAlt}" CornerRadius="6" Padding="10,6" Margin="0,0,0,4">
+                                                    <DockPanel>
+                                                        <Button DockPanel.Dock="Right" Content="{Binding PracticeLabel}" Tag="{Binding Corner}" Padding="8,2" Margin="8,0,0,0" FontSize="12" Click="OnPracticeCorner" />
+                                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Right}" Style="{StaticResource DimText}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding Left}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Lo último que te ha dicho" Style="{StaticResource H2}" />
+                                    <ItemsControl x:Name="EngHistory">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,4" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ======================= ANÁLISIS ======================= -->
+            <TabItem x:Name="TabAnalysis" Header="📈  Análisis" Tag="ANALIZAR">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0" Padding="10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="2*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="3*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Margin="4,0,0,6">
+                                <DockPanel Margin="0,0,0,6">
+                                    <Button DockPanel.Dock="Right" Content="⟳" ToolTip="Actualizar lista" Padding="8,2" Margin="0" Click="OnRefreshLaps" />
+                                    <TextBlock Text="Sesiones" Style="{StaticResource H2}" Margin="0" VerticalAlignment="Center" />
+                                </DockPanel>
+                                <WrapPanel x:Name="GameChips" />
+                                <WrapPanel x:Name="TrackChips" />
+                                <WrapPanel x:Name="CategoryChips" />
+                            </StackPanel>
+                            <ListBox x:Name="SessionList" Grid.Row="1" SelectionChanged="OnSessionSelected">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Subtitle}" Style="{StaticResource DimText}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock Grid.Row="2" Text="Vueltas" Style="{StaticResource H2}" Margin="4,10,0,6" />
+                            <ListBox x:Name="LapList" Grid.Row="3" SelectionChanged="OnLapSelected">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding Badges}" Foreground="{DynamicResource Accent}" />
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Title}" Width="80" />
+                                                    <TextBlock Text="{Binding Time}" FontWeight="SemiBold" FontFamily="Consolas" FontSize="14" />
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Note}" Style="{StaticResource DimText}" FontSize="11" />
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <WrapPanel Grid.Row="4" Margin="0,8,0,0">
+                                <Button x:Name="SetRefButton" Content="Usar como referencia" Click="OnSetReference" />
+                                <Button x:Name="ClearRefButton" Content="Referencia automática" Click="OnClearReference" />
+                            </WrapPanel>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="260" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Border Style="{StaticResource Card}" Padding="14,10" Margin="0,0,0,10">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource DimText}" VerticalAlignment="Center" FontSize="12"
+                                           Text="Rueda: zoom · Arrastrar: mover · Doble clic: ver todo" />
+                                <StackPanel>
+                                    <TextBlock x:Name="AnalysisTitle" Text="Selecciona una vuelta" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock x:Name="AnalysisSubtitle" Style="{StaticResource DimText}" Text="" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" CornerRadius="8" BorderBrush="{DynamicResource Line}" BorderThickness="1" ClipToBounds="True">
+                            <ui:TelemetryChart x:Name="Chart" />
+                        </Border>
+
+                        <Grid Grid.Row="2" Margin="0,10,0,0" Height="310">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="380" />
+                                <ColumnDefinition Width="*" MinWidth="240" />
+                                <ColumnDefinition Width="1.3*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource Card}" Margin="0,0,10,0" Padding="12,10">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Grid x:Name="StatsGrid" Margin="0,0,8,0" />
+                                </ScrollViewer>
+                            </Border>
+                            <Border Grid.Column="1" CornerRadius="8" BorderBrush="{DynamicResource Line}" BorderThickness="1" Margin="0,0,10,0" ClipToBounds="True">
+                                <Grid>
+                                    <ui:TrackMapControl x:Name="TrackMap" />
+                                    <TextBlock Text="Trazada" FontWeight="SemiBold" Margin="10,6,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                                </Grid>
+                            </Border>
+                            <Border Grid.Column="2" Style="{StaticResource Card}" Margin="0" Padding="8,4,8,8">
+                                <TabControl x:Name="AnalysisSideTabs">
+                                    <TabItem Header="Qué mejorar">
+                                        <DockPanel Margin="0,6,0,0">
+                                            <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+                                                <RadioButton x:Name="TipsSimple" Content="Resumen" GroupName="TipsMode" Style="{StaticResource {x:Type ToggleButton}}" Padding="8,3" Margin="0,0,4,0" FontSize="12" Checked="OnTipsModeChanged" />
+                                                <RadioButton x:Name="TipsDetailed" Content="Detalle" GroupName="TipsMode" Style="{StaticResource {x:Type ToggleButton}}" Padding="8,3" Margin="0,0,4,0" FontSize="12" Checked="OnTipsModeChanged" />
+                                            </WrapPanel>
+                                            <ListBox x:Name="TipList" SelectionChanged="OnTipSelected">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <DockPanel>
+                                                            <TextBlock DockPanel.Dock="Left" Text="{Binding Icon}" Foreground="{Binding Brush}" Margin="0,0,8,0" FontSize="14" />
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                                <TextBlock Text="{Binding Detail}" Visibility="{Binding DetailVisibility}" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" />
+                                                                <TextBlock Text="{Binding Why}" Visibility="{Binding WhyVisibility}" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" Margin="0,3,0,0" />
+                                                                <TextBlock Text="{Binding How}" Visibility="{Binding HowVisibility}" TextWrapping="Wrap" FontSize="12" Margin="0,3,0,0" />
+                                                                <TextBlock Text="{Binding Drill}" Visibility="{Binding WhyVisibility}" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" Margin="0,3,0,0" />
+                                                                <Button Tag="{Binding ExerciseId}" Visibility="{Binding ExerciseVisibility}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" Padding="8,2" Margin="0,4,0,2" FontSize="12" Click="OnPracticeExercise">
+                                                                    <TextBlock Text="{Binding ExerciseLabel}" TextWrapping="Wrap" />
+                                                                </Button>
+                                                            </StackPanel>
+                                                        </DockPanel>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </DockPanel>
+                                    </TabItem>
+                                    <TabItem Header="Frenadas">
+                                        <ListBox x:Name="BrakeList" SelectionChanged="OnBrakeSelected" Margin="0,6,0,0">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <DockPanel>
+                                                        <Border DockPanel.Dock="Left" Width="38" Height="38" CornerRadius="19" Background="{Binding ScoreBrush}" Margin="0,0,10,0" VerticalAlignment="Top">
+                                                            <TextBlock Text="{Binding Score}" FontWeight="Bold" Foreground="{DynamicResource OnFill}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding Detail}" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" />
+                                                            <TextBlock Text="{Binding Notes}" Foreground="{DynamicResource Accent}" TextWrapping="Wrap" FontSize="12" />
+                                                        </StackPanel>
+                                                    </DockPanel>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </TabItem>
+                                </TabControl>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- ======================= PROGRESO ======================= -->
+            <TabItem x:Name="TabProgress" Header="📊  Progreso">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0" Padding="10">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Circuitos y tramos" Style="{StaticResource H2}" Margin="4,0,0,6" />
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" Margin="4,0,0,10"
+                                       Text="Cada sesión en el mismo circuito (o tramo) es un punto de tu evolución." />
+                            <ListBox x:Name="ComboList" SelectionChanged="OnComboSelected">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Subtitle}" Style="{StaticResource DimText}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </DockPanel>
+                    </Border>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="220" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Border Style="{StaticResource Card}" Padding="14,10" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock x:Name="ProgressTitle" Text="Elige un circuito o tramo" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,0,0,6" />
+                                <ItemsControl x:Name="ProgressTips">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="2" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,4,12,4">
+                                                <TextBlock DockPanel.Dock="Left" Text="{Binding Icon}" Foreground="{Binding Brush}" Margin="0,0,8,0" FontSize="14" />
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding Tip.Detail}" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" />
+                                                    <TextBlock Text="{Binding How}" Visibility="{Binding HowVisibility}" TextWrapping="Wrap" FontSize="12" Margin="0,3,0,0" />
+                                                    <Button Tag="{Binding ExerciseId}" Visibility="{Binding ExerciseVisibility}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" Padding="8,2" Margin="0,4,0,2" FontSize="12" Click="OnPracticeExercise">
+                                                                    <TextBlock Text="{Binding ExerciseLabel}" TextWrapping="Wrap" />
+                                                                </Button>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" CornerRadius="8" BorderBrush="{DynamicResource Line}" BorderThickness="1" ClipToBounds="True">
+                            <ui:TelemetryChart x:Name="ProgressChart" XUnit="ª sesión" />
+                        </Border>
+
+                        <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,10,0,0" Padding="12,10" Height="230">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                <Grid x:Name="ProgressGrid" Margin="0,0,8,0" />
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- ======================= CIRCUITOS ======================= -->
+            <TabItem x:Name="TabTracks" Header="🗺  Circuitos">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0" Padding="10">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Circuitos y tramos" Style="{StaticResource H2}" Margin="4,0,0,2" />
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="4,0,0,8" FontSize="12"
+                                       Text="Primero los que ya has corrido; después, la biblioteca." />
+                            <ListBox x:Name="TrackList" SelectionChanged="OnTrackSelected">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Subtitle}" Style="{StaticResource DimText}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </DockPanel>
+                    </Border>
+                    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                        <ContentControl x:Name="TrackHost" />
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- ======================= ENTRENADOR ======================= -->
+            <TabItem x:Name="TabTrainer" Header="🎯  Entrenador" Tag="PRACTICAR">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="340" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,12,0">
+                        <StackPanel>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Volante y pedales" Style="{StaticResource H2}" />
+                                    <TextBlock x:Name="WheelStatus" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                    <StackPanel x:Name="InvertPanel" Visibility="Collapsed" Margin="0,2,0,4">
+                                        <TextBlock Text="¿Un pedal marca al revés (100 % suelto)? Inviértelo:" Style="{StaticResource DimText}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,4" />
+                                        <WrapPanel>
+                                            <Button Content="⇅ Freno" Tag="brake" Padding="8,3" Click="OnInvertPedal" />
+                                            <Button Content="⇅ Acelerador" Tag="throttle" Padding="8,3" Click="OnInvertPedal" />
+                                            <Button x:Name="InvertClutchButton" Content="⇅ Embrague" Tag="clutch" Padding="8,3" Click="OnInvertPedal" />
+                                        </WrapPanel>
+                                    </StackPanel>
+                                    <TextBlock x:Name="PedalSourceNow" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,10" />
+
+                                    <Border x:Name="CalibrationPanel" Visibility="Collapsed" Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock x:Name="CalibrationText" TextWrapping="Wrap" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8" />
+                                            <ProgressBar x:Name="CalibrationProgress" Height="6" Maximum="1" Foreground="{DynamicResource Accent}" Background="{DynamicResource Line}" BorderThickness="0" Margin="0,0,0,8" />
+                                            <TextBlock x:Name="CalibrationDone" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,8" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button x:Name="CalibrationSkip" Content="No tengo embrague" Click="OnCalibrationSkip" />
+                                                <Button Content="Cancelar" Click="OnCalibrationCancel" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                    <Button x:Name="CalibrateButton" Content="🎯  Detectar pedales" Style="{StaticResource AccentButton}" HorizontalAlignment="Left" Click="OnCalibrateStart" />
+
+                                    <TextBlock Text="Ejes en directo" Style="{StaticResource DimText}" Margin="0,8,0,4" />
+                                    <ui:AxisMonitorControl x:Name="AxisMonitor" Margin="0,0,0,10" />
+
+                                    <TextBlock Text="Usar los pedales de…" Style="{StaticResource DimText}" Margin="0,4,0,6" />
+                                    <RadioButton x:Name="InputAuto" GroupName="TrainerInput" Foreground="{DynamicResource Text}" Margin="0,0,0,6" Checked="OnTrainerInputChanged">
+                                        <TextBlock Text="Automático: el juego si estás en pista; si no, el volante (recomendado)" TextWrapping="Wrap" />
+                                    </RadioButton>
+                                    <RadioButton x:Name="InputWheel" GroupName="TrainerInput" Foreground="{DynamicResource Text}" Margin="0,0,0,6" Checked="OnTrainerInputChanged">
+                                        <TextBlock Text="Siempre el volante USB" TextWrapping="Wrap" />
+                                    </RadioButton>
+                                    <RadioButton x:Name="InputGame" GroupName="TrainerInput" Foreground="{DynamicResource Text}" Margin="0,0,0,0" Checked="OnTrainerInputChanged">
+                                        <TextBlock Text="Siempre el juego" TextWrapping="Wrap" />
+                                    </RadioButton>
+
+                                    <TextBlock Text="Tacto de los pedales (como en el juego)" Style="{StaticResource DimText}" Margin="0,14,0,6" />
+                                    <StackPanel x:Name="FeelOptions" />
+                                    <TextBlock x:Name="FeelInfo" Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Card}" Padding="10">
+                                <StackPanel>
+                                    <TextBlock Text="Ejercicios de pedales" Style="{StaticResource H2}" Margin="4,0,0,6" />
+                                    <ListBox x:Name="ExerciseList" SelectionChanged="OnExerciseSelected">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <DockPanel>
+                                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Best}" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                                        <TextBlock Text="{Binding Subtitle}" Style="{StaticResource DimText}" FontSize="12" />
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" MinHeight="260" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Border Style="{StaticResource Card}" Padding="14,10" Margin="0,0,0,10">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button x:Name="TrainerStart" Content="▶  Empezar" Style="{StaticResource AccentButton}" Click="OnTrainerStart" Margin="0,0,8,0" />
+                                    <Button x:Name="TrainerStop" Content="■  Parar" Click="OnTrainerStop" Margin="0" IsEnabled="False" />
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock x:Name="ExerciseTitle" Text="Elige un ejercicio" FontSize="16" FontWeight="SemiBold" />
+                                    <TextBlock x:Name="ExerciseDescription" Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                    <TextBlock x:Name="ExerciseWhy" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0" Foreground="{DynamicResource Accent}" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <Border Grid.Row="1" CornerRadius="8" BorderBrush="{DynamicResource Line}" BorderThickness="1" ClipToBounds="True">
+                            <ui:TrainerControl x:Name="Trainer" />
+                        </Border>
+                        <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,10,0,0">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Left" Width="84" Height="84" CornerRadius="42" Background="{DynamicResource PanelAlt}" Margin="0,0,16,0">
+                                    <TextBlock x:Name="TrainerScore" Text="--" FontSize="30" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock x:Name="TrainerResultTitle" Text="Resultado" FontSize="15" FontWeight="SemiBold" />
+                                    <TextBlock x:Name="TrainerSummary" Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,2,0,2" />
+                                    <TextBlock x:Name="TrainerAdvice" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- ======================= APRENDER ======================= -->
+            <TabItem x:Name="TabLearn" Header="📘  Aprender">
+                <ContentControl x:Name="LearnHost" />
+            </TabItem>
+
+            <!-- ======================= OVERLAY ======================= -->
+            <TabItem x:Name="TabOverlay" Header="🖥  Overlay" Tag="AJUSTES">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,12,0">
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Overlay de pedales" Style="{StaticResource H2}" />
+                                    <CheckBox x:Name="OverlayEnabled" Content="Activar el overlay" Checked="OnOverlayEnabledChanged" Unchecked="OnOverlayEnabledChanged" />
+                                    <CheckBox x:Name="AutoHideCheck" Checked="OnOverlayOptionChanged" Unchecked="OnOverlayOptionChanged">
+                                        <TextBlock TextWrapping="Wrap" Text="Mostrarlo sólo mientras conduces (se oculta en menús y en el escritorio)" />
+                                    </CheckBox>
+                                    <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,4,0,12"
+                                               Text="Mientras juegas, el overlay es transparente a los clics: no puedes tocarlo ni moverlo por accidente. Para colocarlo, desbloquéalo aquí; se vuelve a bloquear solo al minimizar o cerrar esta ventana." />
+                                    <ToggleButton x:Name="EditToggle" Content="🔓  Desbloquear para mover y redimensionar" HorizontalAlignment="Left"
+                                                  Checked="OnEditToggled" Unchecked="OnEditToggled" />
+                                    <Border x:Name="EditHelp" Visibility="Collapsed" Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,10">
+                                        <TextBlock TextWrapping="Wrap" LineHeight="20"
+                                                   Text="El overlay tiene ahora un marco amarillo. • Arrastra desde el centro para moverlo a cualquier parte (también a otro monitor). • Arrastra un borde o una esquina para cambiar el tamaño. • Rueda del ratón encima: más grande / más pequeño. • Flechas del teclado: mover 1 px (con Mayús, 10 px)." />
+                                    </Border>
+                                    <TextBlock Text="Posición rápida (en el monitor donde está el overlay)" Style="{StaticResource DimText}" Margin="0,8,0,6" />
+                                    <UniformGrid Columns="3" Rows="3" Width="330" HorizontalAlignment="Left">
+                                        <Button Content="↖ Arriba izq." Tag="Left,Top" Click="OnSnap" />
+                                        <Button Content="↑ Arriba" Tag="Center,Top" Click="OnSnap" />
+                                        <Button Content="↗ Arriba der." Tag="Right,Top" Click="OnSnap" />
+                                        <Button Content="← Izquierda" Tag="Left,Center" Click="OnSnap" />
+                                        <Button Content="• Centro" Tag="Center,Center" Click="OnSnap" />
+                                        <Button Content="→ Derecha" Tag="Right,Center" Click="OnSnap" />
+                                        <Button Content="↙ Abajo izq." Tag="Left,Bottom" Click="OnSnap" />
+                                        <Button Content="↓ Abajo" Tag="Center,Bottom" Click="OnSnap" />
+                                        <Button Content="↘ Abajo der." Tag="Right,Bottom" Click="OnSnap" />
+                                    </UniformGrid>
+                                    <WrapPanel x:Name="MonitorButtons" Margin="0,4,0,0" />
+
+                                    <TextBlock Text="Posición y tamaño exactos (px)" Style="{StaticResource DimText}" Margin="0,10,0,6" />
+                                    <WrapPanel>
+                                        <StackPanel Margin="0,0,10,8">
+                                            <TextBlock Text="X" Style="{StaticResource DimText}" />
+                                            <TextBox x:Name="OverlayX" Width="70" />
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,8">
+                                            <TextBlock Text="Y" Style="{StaticResource DimText}" />
+                                            <TextBox x:Name="OverlayY" Width="70" />
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,8">
+                                            <TextBlock Text="Ancho" Style="{StaticResource DimText}" />
+                                            <TextBox x:Name="OverlayW" Width="70" />
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,8">
+                                            <TextBlock Text="Alto" Style="{StaticResource DimText}" />
+                                            <TextBox x:Name="OverlayH" Width="70" />
+                                        </StackPanel>
+                                        <Button Content="Aplicar" VerticalAlignment="Bottom" Click="OnOverlayApplyNumbers" />
+                                    </WrapPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="－ Más pequeño" Click="OnOverlaySmaller" />
+                                        <Button Content="＋ Más grande" Click="OnOverlayBigger" />
+                                        <Button Content="Restablecer" Click="OnOverlayReset" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Contenido" Style="{StaticResource H2}" />
+                                    <CheckBox x:Name="ShowTraceCheck" Content="Gráfica de acelerador y freno" Checked="OnOverlayOptionChanged" Unchecked="OnOverlayOptionChanged" />
+                                    <CheckBox x:Name="ShowBarsCheck" Content="Columnas de cada pedal" Checked="OnOverlayOptionChanged" Unchecked="OnOverlayOptionChanged" />
+                                    <CheckBox x:Name="ShowClutchCheck" Content="Incluir embrague" Checked="OnOverlayOptionChanged" Unchecked="OnOverlayOptionChanged" />
+                                    <CheckBox x:Name="ShowGearCheck" Content="Marcha y velocidad" Checked="OnOverlayOptionChanged" Unchecked="OnOverlayOptionChanged" />
+                                    <CheckBox x:Name="ShowDeltaCheck" Checked="OnOverlayOptionChanged" Unchecked="OnOverlayOptionChanged">
+                                        <TextBlock TextWrapping="Wrap" Text="Diferencia con tu mejor vuelta (verde = vas más rápido)" />
+                                    </CheckBox>
+
+                                    <TextBlock x:Name="WindowSecondsLabel" Text="Historial de la gráfica" Style="{StaticResource DimText}" Margin="0,8,0,0" />
+                                    <Slider x:Name="WindowSecondsSlider" Minimum="2" Maximum="20" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="OnOverlaySliderChanged" />
+                                    <TextBlock x:Name="OpacityLabel" Text="Opacidad del fondo" Style="{StaticResource DimText}" />
+                                    <Slider x:Name="OpacitySlider" Minimum="0" Maximum="1" TickFrequency="0.05" IsSnapToTickEnabled="True" ValueChanged="OnOverlaySliderChanged" />
+                                    <TextBlock x:Name="WidthLabel" Text="Ancho" Style="{StaticResource DimText}" />
+                                    <Slider x:Name="WidthSlider" Minimum="120" Maximum="3000" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="OnOverlaySliderChanged" />
+                                    <TextBlock x:Name="HeightLabel" Text="Alto" Style="{StaticResource DimText}" />
+                                    <Slider x:Name="HeightSlider" Minimum="50" Maximum="1200" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="OnOverlaySliderChanged" />
+                                    <TextBlock x:Name="OverlayPosText" Style="{StaticResource DimText}" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Pantalla en el teléfono" Style="{StaticResource H2}" />
+                                    <CheckBox x:Name="PhoneEnabled" Checked="OnPhoneChanged" Unchecked="OnPhoneChanged">
+                                        <TextBlock TextWrapping="Wrap" Text="Usar el teléfono como pantalla (pedales, marcha, RPM, diferencia y próxima frenada)" />
+                                    </CheckBox>
+                                    <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" LineHeight="19" Margin="0,2,0,8"
+                                               Text="El teléfono tiene que estar en la misma Wi-Fi que el PC. Escanea el código con la cámara (o escribe la dirección en el navegador): no hace falta instalar nada. La primera vez Windows te preguntará si permites a SimTelemetry conectarse en tu red privada: di que sí. La dirección lleva un código secreto, así que nadie más de tu red puede verla." />
+                                    <StackPanel x:Name="PhonePanel" Orientation="Horizontal" Visibility="Collapsed">
+                                        <Border Background="White" CornerRadius="6" Padding="6" Margin="0,0,12,0">
+                                            <Image x:Name="PhoneQr" Width="150" Height="150" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Center" MaxWidth="320">
+                                            <TextBox x:Name="PhoneUrl" IsReadOnly="True" FontSize="14" Margin="0,0,0,6" />
+                                            <TextBlock x:Name="PhoneStatus" Style="{StaticResource DimText}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock x:Name="PhoneError" Foreground="{DynamicResource Bad}" TextWrapping="Wrap" Visibility="Collapsed" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Tarjeta de información (circuito y recomendación)" Style="{StaticResource H2}" />
+                                    <CheckBox x:Name="InfoCardEnabled" Content="Mostrarla sobre el juego" Checked="OnInfoCardChanged" Unchecked="OnInfoCardChanged" />
+                                    <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" LineHeight="19" Margin="0,2,0,8"
+                                               Text="Una tarjeta pequeña, como la de Steam: aparece sola unos segundos al entrar en una sesión y mientras estás en boxes, con el circuito, la categoría y con qué coche eres más rápido ahí. Pulsa la combinación para ampliarla con la información del circuito, y otra vez para ocultarla. El juego también recibe las teclas: si allí hacen algo, elige otra. Mayús+Tab abre el overlay de Steam en los juegos de Steam (ACC, Assetto Corsa)." />
+                                    <TextBlock Text="Esquina" Style="{StaticResource DimText}" />
+                                    <WrapPanel x:Name="InfoCornerChips" Margin="0,4,0,4" />
+                                    <TextBlock Text="Combinación para ampliar u ocultar" Style="{StaticResource DimText}" />
+                                    <WrapPanel x:Name="InfoKeyChips" Margin="0,4,0,4" />
+                                    <Button Content="Ver cómo queda (8 s)" HorizontalAlignment="Left" Click="OnInfoCardPreview" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Si el overlay no se ve encima del juego" Style="{StaticResource H2}" />
+                                    <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}" LineHeight="19"
+                                               Text="Windows sólo deja dibujar encima de un juego en modo «Ventana sin bordes» (Borderless / Pantalla completa en ventana). En «Pantalla completa» exclusiva el juego tapa todo. Cámbialo en las opciones gráficas: ACC → Vídeo → Modo de pantalla: Ventana sin bordes · DiRT Rally 2.0 → Opciones → Ajustes gráficos → Modo de pantalla: Ventana sin bordes · EA WRC → Ajustes → Vídeo → Modo de pantalla: Ventana sin bordes · Forza → Vídeo → Modo de pantalla: Ventana / Sin bordes · iRacing: desactiva «Full Screen» en Opciones → Gráficos." />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ======================= JUEGOS ======================= -->
+            <TabItem x:Name="TabGames" Header="⚙  Configurar juegos">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="1000" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource Card}" Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}">
+                            <TextBlock TextWrapping="Wrap" LineHeight="19"
+                                       Text="Importante: DiRT Rally y EA WRC sólo leen la configuración de telemetría al arrancar. Configúralos con el juego CERRADO (o ciérralo y vuelve a abrirlo después). Pulsa «Comprobar» para ver si cada juego está listo." />
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="DiRT Rally / DiRT Rally 2.0 / DiRT 4" Style="{StaticResource H2}" />
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}" Margin="0,0,0,10"
+                                           Text="Activa la telemetría UDP en Documentos\My Games\&lt;juego&gt;\hardwaresettings\hardware_settings_config.xml (udp enabled=&quot;true&quot; extradata=&quot;3&quot;). SimTelemetry lo modifica por ti y guarda una copia de seguridad." />
+                                <TextBlock x:Name="DirtStatus" TextWrapping="Wrap" Margin="0,0,0,10" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Configurar DiRT Rally automáticamente" Style="{StaticResource AccentButton}" Click="OnConfigureDirt" />
+                                    <Button Content="Comprobar" Click="OnCheckGames" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="EA SPORTS WRC" Style="{StaticResource H2}" />
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}" Margin="0,0,0,10"
+                                           Text="SimTelemetry instala su propio formato de paquete (udp\simtelemetry.json, con posición del coche para el mapa) y lo activa en config.json sin tocar otros programas que ya tengas configurados." />
+                                <TextBlock x:Name="WrcStatus" TextWrapping="Wrap" Margin="0,0,0,10" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Configurar EA WRC automáticamente" Style="{StaticResource AccentButton}" Click="OnConfigureWrc" />
+                                    <Button Content="Comprobar" Click="OnCheckGames" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Forza Motorsport (2023), Forza Motorsport 7, Forza Horizon 4 / 5" Style="{StaticResource H2}" />
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}"
+                                           Text="1) En el juego: Ajustes → Interfaz y juego (HUD and Gameplay) → Salida de datos (Data Out): ACTIVADO · IP 127.0.0.1 · Puerto 5300 · Formato «Aceleración de auto» (Car Dash; no «Trineo»)." />
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}" Margin="0,8,0,8"
+                                           Text="2) Versión Microsoft Store / Game Pass: Windows bloquea que la app del juego envíe datos a tu propio PC. El botón da ese permiso (Windows te pedirá confirmación de administrador). Sólo hace falta una vez." />
+                                <TextBlock x:Name="ForzaStatus" TextWrapping="Wrap" Margin="0,0,0,10" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Button x:Name="ForzaPermissionButton" Content="Dar permiso de red a Forza" Style="{StaticResource AccentButton}" Click="OnForzaPermission" />
+                                    <Button Content="Comprobar" Click="OnCheckGames" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Assetto Corsa Competizione · Assetto Corsa · iRacing" Style="{StaticResource H2}" />
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}"
+                                           Text="No necesitan configuración: SimTelemetry lee su memoria compartida oficial en cuanto sales a pista. En ACC la longitud de cada circuito se mide sola en tu primera vuelta completa." />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="BeamNG.drive · Live for Speed (OutGauge)" Style="{StaticResource H2}" />
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}"
+                                           Text="BeamNG: Opciones → Otros → Protocolos → OutGauge: activado, IP 127.0.0.1, puerto 4444. LFS: en cfg.txt pon OutGauge Mode 1, OutGauge IP 127.0.0.1, OutGauge Port 4444. Estos juegos no envían datos de vuelta, así que se graban como recorridos continuos." />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Diagnóstico" Style="{StaticResource H2}" />
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}" Margin="0,0,0,8"
+                                           Text="Paquetes recibidos por cada lector desde que abriste la app. Si un juego está abierto en pista y su contador no sube, el juego no está enviando datos (configuración, permiso o puerto)." />
+                                <ItemsControl x:Name="DiagnosticsList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,2">
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Packets}" FontFamily="Consolas" />
+                                                <TextBlock Text="{Binding Name}" />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Content="Abrir registro de diagnóstico" HorizontalAlignment="Left" Margin="0,10,8,0" Click="OnOpenLog" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Puertos UDP" Style="{StaticResource H2}" />
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}" Margin="0,0,0,10"
+                                           Text="Cámbialos sólo si otro programa (SimHub, un volante con pantalla…) ya usa ese puerto. Si cambias el de DiRT o WRC, vuelve a pulsar su botón de configuración." />
+                                <WrapPanel>
+                                    <StackPanel Margin="0,0,16,8">
+                                        <TextBlock Text="DiRT Rally" Style="{StaticResource DimText}" />
+                                        <TextBox x:Name="PortDirt" Width="110" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,16,8">
+                                        <TextBlock Text="EA WRC" Style="{StaticResource DimText}" />
+                                        <TextBox x:Name="PortWrc" Width="110" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,16,8">
+                                        <TextBlock Text="Forza" Style="{StaticResource DimText}" />
+                                        <TextBox x:Name="PortForza" Width="110" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,16,8">
+                                        <TextBlock Text="OutGauge" Style="{StaticResource DimText}" />
+                                        <TextBox x:Name="PortOutGauge" Width="110" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <Button Content="Aplicar puertos" HorizontalAlignment="Left" Click="OnApplyPorts" />
+                            </StackPanel>
+                        </Border>
+                        <TextBox x:Name="ConfigResult" IsReadOnly="True" TextWrapping="Wrap" MinHeight="60" Visibility="Collapsed" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ======================= APARIENCIA ======================= -->
+            <TabItem x:Name="TabAppearance" Header="🎨  Apariencia">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="1000" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Tema" Style="{StaticResource H2}" />
+                                <WrapPanel>
+                                    <RadioButton x:Name="ThemeDark" Content="🌙  Oscuro" GroupName="Theme" Style="{StaticResource {x:Type ToggleButton}}" Checked="OnThemeModeChanged" />
+                                    <RadioButton x:Name="ThemeLight" Content="☀  Claro" GroupName="Theme" Style="{StaticResource {x:Type ToggleButton}}" Checked="OnThemeModeChanged" />
+                                </WrapPanel>
+                                <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap"
+                                           Text="El oscuro cansa menos la vista con poca luz o con la app al lado del juego; el claro se lee mejor de día." />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Color" Style="{StaticResource H2}" />
+                                <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                           Text="Se usa en los botones, la pestaña abierta y lo que seleccionas, y el fondo de la ventana toma un tono del mismo color." />
+                                <WrapPanel x:Name="ThemeColors" />
+                                <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0"
+                                           Text="No cambian el overlay sobre el juego ni los colores que significan algo (verde acelerador, rojo freno, ámbar aviso): se leen igual con cualquier color." />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

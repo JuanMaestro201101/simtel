@@ -1,0 +1,11 @@
+# Compilados y publicaciones (se generan con dotnet build / publish)
+bin/
+obj/
+dist/
+dist-nueva/
+release-amigo/
+*.zip
+# Editores
+.vs/
+*.user
+__pycache__/
