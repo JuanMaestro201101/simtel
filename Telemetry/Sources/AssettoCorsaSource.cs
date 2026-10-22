@@ -54,6 +54,8 @@ public sealed class AssettoCorsaSource : SharedMemorySourceBase
 
     protected override bool TryConnect()
     {
+        // G HUB (y otras apps) dejan abierta la memoria de AC con el juego cerrado: sin el proceso, son datos viejos.
+        if (!GameRunning()) return false;
         _phys = OpenView("Local\\acpmf_physics", out _physFile);
         if (_phys == null) return false;
         _gfx = OpenView("Local\\acpmf_graphics", out _gfxFile);
@@ -96,10 +98,8 @@ public sealed class AssettoCorsaSource : SharedMemorySourceBase
 
         if (packetId == _lastPacketId)
         {
-            // El juego se cerró (o está en pausa larga): soltamos el mapeo para reconectar limpio.
-            // Si se cerró en pista el estado se queda en "en vivo" para siempre, así que miramos también el proceso.
+            // Sin datos nuevos (menús, pausa o juego cerrado): sólo soltamos el mapeo si el proceso ya no está.
             if ((DateTime.UtcNow - _lastChangeUtc).TotalSeconds < 10) return true;
-            if (status == 0) return false;
             if (DateTime.UtcNow < _nextProcessCheck) return true;
             _nextProcessCheck = DateTime.UtcNow.AddSeconds(10);
             return GameRunning();
