@@ -120,6 +120,9 @@ public partial class MainWindow
                     ? "Todavía no tienes una pasada completa por este tramo. Termina el tramo y la app aprenderá tus puntos de frenada."
                     : "Todavía no tienes una vuelta completa y válida aquí. Haz una vuelta limpia, empezando en la línea de meta, y la app aprenderá tus puntos de frenada.")));
 
+        var advice = item.Game != null && item.Track != null ? CarAdviceBook.ForTrack(item.Game, item.Track).ToList() : new List<CarAdvice>();
+        if (advice.Count > 0)
+            root.Children.Add(GuideContent.Card("Coche recomendado aquí (fuentes)", advice.Select(AdviceBlock).ToArray()));
         if (info != null) AddLibrary(root, info, item.Game);
         else if (item.Game != null && !IsRally(item.Game)) root.Children.Add(BuildLinkCard(item));
         if (item.Game != null && IsRally(item.Game)) root.Children.Add(RallyCard());

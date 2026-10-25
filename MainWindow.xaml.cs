@@ -234,6 +234,7 @@ public partial class MainWindow : Window
         _lapsDirty = true;
         _progressDirty = true;
         _tracksDirty = true;
+        _carsDirty = true;
         // Si estabas viendo esta sesión (o nada), Análisis salta a la vuelta nueva; la referencia sigue siendo la más rápida.
         if (info.Completed && (_currentLap == null || _currentLap.SessionFolder == info.SessionFolder)) _currentLap = info;
         if (Tabs.SelectedItem == TabAnalysis) RefreshLaps(_currentLap?.FilePath);
@@ -266,6 +267,7 @@ public partial class MainWindow : Window
         else if (Tabs.SelectedItem == TabProgress && _progressDirty) RefreshProgress();
         else if (Tabs.SelectedItem == TabGames) CheckGames();
         else if (Tabs.SelectedItem == TabTracks && _tracksDirty) RefreshTracks();
+        else if (Tabs.SelectedItem == TabCars && _carsDirty) RefreshCars();
         if (Tabs.SelectedItem != TabTrainer) StopTrainer(showResult: false);
         _trainerTimer.IsEnabled = Tabs.SelectedItem == TabTrainer;
         if (Tabs.SelectedItem == TabTrainer) RefreshFeelCombo();

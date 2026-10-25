@@ -32,7 +32,7 @@ public static class ProgressAnalyzer
     // Estadísticas ya calculadas de cada vuelta (las vueltas guardadas no cambian): abrir Progreso otra vez es instantáneo.
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime Written, LapStats Stats)> StatsCache = new();
 
-    private static LapStats CachedStats(string path)
+    internal static LapStats CachedStats(string path)
     {
         var written = File.GetLastWriteTimeUtc(path);
         if (StatsCache.TryGetValue(path, out var hit) && hit.Written == written) return hit.Stats;

@@ -65,7 +65,7 @@ public partial class MainWindow
         ApplyTitleBar();
         // Lo que se construye en código con los colores del momento se rehace: gráficas, tablas, mapa y guía.
         LearnHost.Content = GuideContent.Build();
-        _lapsDirty = _progressDirty = _tracksDirty = true;
+        _lapsDirty = _progressDirty = _tracksDirty = _carsDirty = true;
         foreach (var c in new UIElement[] { Chart, ProgressChart, TrackMap, Trainer, AxisMonitor }) c.InvalidateVisual();
     }
 

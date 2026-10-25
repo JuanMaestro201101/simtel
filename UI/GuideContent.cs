@@ -183,7 +183,7 @@ public static class GuideContent
         return grid;
     }
 
-    private static TextBlock Link(string text, string url)
+    internal static TextBlock Link(string text, string url)
     {
         var link = new Hyperlink(new Run(text)) { NavigateUri = new Uri(url), Foreground = (Brush)Application.Current.FindResource("Accent") };
         link.RequestNavigate += (_, e) =>

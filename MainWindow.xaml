@@ -577,6 +577,13 @@
             </TabItem>
 
             <!-- ======================= ENTRENADOR ======================= -->
+            <!-- ======================= COCHES ======================= -->
+            <TabItem x:Name="TabCars" Header="COCHES">
+                <ScrollViewer Margin="0,12,0,0" VerticalScrollBarVisibility="Auto">
+                    <ContentControl x:Name="CarsHost" Margin="0,0,8,0" />
+                </ScrollViewer>
+            </TabItem>
+
             <TabItem x:Name="TabTrainer" Header="ENTRENADOR" Tag="PRACTICAR">
                 <Grid Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>

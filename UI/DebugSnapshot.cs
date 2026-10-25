@@ -51,7 +51,7 @@ internal static class DebugSnapshot
                 main.SelectFirstSegmentTip();
             }
             if (main.Tabs.SelectedItem == main.TabTracks) main.SelectBusiestTrack();
-            if (main.Tabs.SelectedItem == main.TabProgress || main.Tabs.SelectedItem == main.TabTracks) Wait(1.5); // se calculan en segundo plano
+            if (main.Tabs.SelectedItem == main.TabProgress || main.Tabs.SelectedItem == main.TabTracks || main.Tabs.SelectedItem == main.TabCars) Wait(2.5); // se calculan en segundo plano
             Flush();
             Save((FrameworkElement)main.Content, Path.Combine(folder, names[i] + ".png"));
 

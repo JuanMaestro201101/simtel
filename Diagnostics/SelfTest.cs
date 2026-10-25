@@ -259,6 +259,15 @@ internal static class SelfTest
             }
         Log.Info($"SELFTEST temas: {UI.Palette.Choices.Length * 2} combinaciones de tema y color comprobadas");
         UI.Palette.Apply("dark", "");
+        // Estilo: el ritmo sólo se compara entre coches de la misma categoría en el mismo circuito.
+        var pace = Analysis.DrivingStyle.PaceVerdicts(new Analysis.DrivingStyle.Best[]
+        {
+            new("ACC", "monza", "GT3", "ford_mustang_gt3", 100), new("ACC", "monza", "GT3", "audi_r8_lms_evo_ii", 101),
+            new("ACC", "monza", "GT4", "alpine_a110_gt4", 90), new("ACC", "spa", "GT3", "ford_mustang_gt3", 140),
+        });
+        Check(pace.Count == 1 && pace[0].Contains("Mustang") && (pace[0].Contains("1,0 %") || pace[0].Contains("1.0 %")), "estilo: ritmo sólo en la misma categoría y circuito");
+        Check(Tracks.CarAdviceBook.ForTrack("Assetto Corsa Competizione", "Spa").Any(a => a.Cars.Contains("Audi")) &&
+              !Tracks.CarAdviceBook.ForTrack("Assetto Corsa Competizione", "Zolder").Any(), "coches: recomendación por circuito");
         Check(UI.TelemetryChart.AxisStep(296, 6) == 100 && UI.TelemetryChart.AxisStep(210, 3) == 100 && UI.TelemetryChart.AxisStep(6.96, 2) == 5,
             "marcas del eje: 100 km/h, 100 % de volante, marcha de 5 en 5");
 

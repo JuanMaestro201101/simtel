@@ -59,10 +59,11 @@ public partial class MainWindow
         _loading = true;
         RefreshProfileChips();
         _loading = false;
-        _lapsDirty = _progressDirty = _tracksDirty = true;
+        _lapsDirty = _progressDirty = _tracksDirty = _carsDirty = true;
         if (Tabs.SelectedItem == TabAnalysis) RefreshLaps(null);
         else if (Tabs.SelectedItem == TabProgress) RefreshProgress();
         else if (Tabs.SelectedItem == TabTracks) RefreshTracks();
+        else if (Tabs.SelectedItem == TabCars) RefreshCars();
     }
 
     private void OnAutoProfileChanged(object sender, RoutedEventArgs e)
