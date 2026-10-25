@@ -11,12 +11,17 @@
         <SolidColorBrush x:Key="EditHint" Color="{x:Static ui:Palette.EditHint}" />
         <SolidColorBrush x:Key="EditHintText" Color="{x:Static ui:Palette.EditHintText}" />
 
+        <!-- Tipografía: Bahnschrift (viene con Windows) condensada para títulos, cifras y botones, como una pantalla de tiempos;
+             Segoe UI para los textos largos; Consolas para los tiempos en columnas. -->
+        <FontFamily x:Key="Display">Bahnschrift, Segoe UI</FontFamily>
+        <FontFamily x:Key="Mono">Consolas</FontFamily>
+
         <!-- Foco de teclado (sólo al navegar con Tab o flechas): anillo Accent de 2 px, ≥3:1 sobre cualquier superficie -->
         <Style x:Key="FocusRing">
             <Setter Property="Control.Template">
                 <Setter.Value>
                     <ControlTemplate>
-                        <Border Margin="-2" BorderBrush="{DynamicResource Accent}" BorderThickness="2" CornerRadius="8" SnapsToDevicePixels="True" />
+                        <Border Margin="-2" BorderBrush="{DynamicResource Accent}" BorderThickness="2" CornerRadius="0" SnapsToDevicePixels="True" />
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -30,10 +35,21 @@
             <Setter Property="Foreground" Value="{DynamicResource Dim}" />
         </Style>
 
+        <!-- Título de tarjeta: mayúsculas condensadas en Dim, como las etiquetas de un muro de boxes -->
         <Style x:Key="H2" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Display}" />
+            <Setter Property="FontStretch" Value="Condensed" />
             <Setter Property="FontSize" Value="15" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Foreground" Value="{DynamicResource Dim}" />
+        </Style>
+
+        <!-- Cifras grandes (tiempo de vuelta, velocidad…) -->
+        <Style x:Key="Figure" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Display}" />
+            <Setter Property="FontStretch" Value="Condensed" />
+            <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="Foreground" Value="{DynamicResource Text}" />
         </Style>
 
@@ -41,7 +57,7 @@
             <Setter Property="Background" Value="{DynamicResource Panel}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Line}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="CornerRadius" Value="0" />
             <Setter Property="Padding" Value="14" />
             <Setter Property="Margin" Value="0,0,0,12" />
         </Style>
@@ -53,12 +69,15 @@
             <Setter Property="Padding" Value="12,6" />
             <Setter Property="Margin" Value="0,0,8,8" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="{StaticResource Display}" />
+            <Setter Property="FontStretch" Value="SemiCondensed" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="B" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="1" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                BorderThickness="1" CornerRadius="0" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -77,9 +96,33 @@
             </Setter>
         </Style>
 
+        <!-- Botón principal: relleno del color de acento, como el «PRACTICAR ESTA CURVA» del diseño -->
         <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+            <Setter Property="Background" Value="{DynamicResource Accent}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+            <Setter Property="Foreground" Value="{DynamicResource OnFill}" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="B" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Opacity" Value="0.88" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="B" Property="Opacity" Value="0.75" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="ToggleButton">
@@ -87,12 +130,15 @@
             <Setter Property="Padding" Value="12,6" />
             <Setter Property="Margin" Value="0,0,8,8" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="{StaticResource Display}" />
+            <Setter Property="FontStretch" Value="SemiCondensed" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
                         <Border x:Name="B" Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}"
-                                BorderThickness="1" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                BorderThickness="1" CornerRadius="0" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -124,7 +170,7 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <Border x:Name="Box" Width="16" Height="16" Margin="0,1,8,0" VerticalAlignment="Top" CornerRadius="4" BorderThickness="1.5"
+                            <Border x:Name="Box" Width="16" Height="16" Margin="0,1,8,0" VerticalAlignment="Top" CornerRadius="1" BorderThickness="1.5"
                                     Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Off}">
                                 <Path x:Name="Mark" Data="M 2.5,7 L 5.5,10 L 11,3.5" Stroke="{DynamicResource OnFill}" StrokeThickness="2"
                                       StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed" />
@@ -208,7 +254,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="B" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}"
+                        <Border x:Name="B" Background="Transparent" CornerRadius="0" Padding="{TemplateBinding Padding}"
                                 BorderThickness="1" BorderBrush="Transparent">
                             <ContentPresenter />
                         </Border>
@@ -234,14 +280,14 @@
 
         <Style TargetType="TabItem">
             <Setter Property="Foreground" Value="{DynamicResource Dim}" />
-            <Setter Property="FontSize" Value="14" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="B" Padding="16,8" Margin="0,0,4,0" CornerRadius="6,6,0,0" Background="Transparent"
-                                BorderThickness="0,0,0,2" BorderBrush="Transparent">
-                            <ContentPresenter ContentSource="Header" />
+                        <Border x:Name="B" Padding="14,7" Margin="0,0,2,0" Background="Transparent"
+                                BorderThickness="0,0,0,3" BorderBrush="Transparent">
+                            <ContentPresenter ContentSource="Header" TextElement.FontFamily="{StaticResource Display}" TextElement.FontStretch="Condensed"
+                                              TextElement.FontWeight="SemiBold" TextElement.FontSize="15" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
@@ -258,19 +304,36 @@
             </Setter>
         </Style>
 
-        <!-- Navegación lateral de la ventana principal: grupos (Tag) e iconos -->
+        <!-- Navegación principal: tira superior en mayúsculas condensadas; una raya fina separa los grupos (Tag) -->
+        <Style x:Key="NavTabs" TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Top" Background="{DynamicResource Panel}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="8,0">
+                                <TabPanel IsItemsHost="True" />
+                            </Border>
+                            <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" />
+                        </DockPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="NavTab" TargetType="TabItem">
             <Setter Property="Foreground" Value="{DynamicResource Dim}" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
-                        <StackPanel>
-                            <TextBlock x:Name="Group" Text="{TemplateBinding Tag}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Dim}" Margin="14,14,0,4" />
-                            <Border x:Name="B" MinWidth="176" Padding="12,8" Margin="0,0,0,2" CornerRadius="6" Background="Transparent"
-                                    BorderThickness="3,0,0,0" BorderBrush="Transparent">
-                                <ContentPresenter ContentSource="Header" />
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="Group" Width="1" Margin="8,13" Background="{DynamicResource Line}" />
+                            <Border x:Name="B" Padding="13,0" Height="44" Background="Transparent" BorderThickness="0,0,0,3" BorderBrush="Transparent">
+                                <ContentPresenter ContentSource="Header" VerticalAlignment="Center" TextElement.FontFamily="{StaticResource Display}"
+                                                  TextElement.FontStretch="Condensed" TextElement.FontWeight="SemiBold" TextElement.FontSize="16" />
                             </Border>
                         </StackPanel>
                         <ControlTemplate.Triggers>
@@ -278,12 +341,10 @@
                                 <Setter TargetName="Group" Property="Visibility" Value="Collapsed" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="B" Property="Background" Value="{DynamicResource PanelAlt}" />
                                 <Setter Property="Foreground" Value="{DynamicResource Text}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="B" Property="BorderBrush" Value="{DynamicResource Accent}" />
-                                <Setter TargetName="B" Property="Background" Value="{DynamicResource Panel}" />
                                 <Setter Property="Foreground" Value="{DynamicResource Text}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -365,7 +426,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Thumb">
-                        <Border x:Name="B" Margin="2" CornerRadius="3" Background="{DynamicResource Line}" />
+                        <Border x:Name="B" Margin="2" Background="{DynamicResource Line}" />
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="B" Property="Background" Value="{DynamicResource Off}" />

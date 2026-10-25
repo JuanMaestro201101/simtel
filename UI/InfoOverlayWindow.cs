@@ -31,7 +31,7 @@ public sealed class InfoOverlayWindow : Window
         ShowActivated = false;
         ResizeMode = ResizeMode.NoResize;
         SizeToContent = SizeToContent.WidthAndHeight;
-        Title = "SimTelemetry Info";
+        Title = "APEX Info";
         var panel = new StackPanel();
         panel.Children.Add(_title);
         panel.Children.Add(_headline);

@@ -11,7 +11,7 @@ public static class PhonePage
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f1217">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>SimTelemetry</title>
+<title>APEX</title>
 <style>
   :root { --bg:#0f1217; --panel:#171b22; --line:#2a303b; --text:#e6ebf2; --dim:#8b95a5; --good:#34d058; --bad:#ff4d4d; --accent:#ffc107; --thr:#34d058; --brk:#ff4d4d; }
   * { box-sizing:border-box; margin:0; padding:0; }
@@ -133,7 +133,7 @@ public static class PhonePage
     es.onmessage = e => { try { update(JSON.parse(e.data)); } catch (_) {} };
     es.onerror = () => { $('status').textContent = 'Sin conexión con el PC… reintentando'; };
   }
-  setInterval(() => { if (Date.now() - lastAt > 2000) $('status').textContent = 'Sin datos del PC (¿está abierta SimTelemetry?)'; }, 1000);
+  setInterval(() => { if (Date.now() - lastAt > 2000) $('status').textContent = 'Sin datos del PC (¿está abierta APEX?)'; }, 1000);
   $('full').onclick = () => (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || (() => {})).call(document.documentElement);
   window.addEventListener('resize', draw);
   connect();

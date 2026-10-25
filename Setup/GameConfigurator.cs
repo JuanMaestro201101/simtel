@@ -193,7 +193,7 @@ public static class GameConfigurator
         {
             var installed = JsonNode.Parse(File.ReadAllText(structure))?["packets"]?[0]?["channels"]?.AsArray().Count ?? 0;
             if (installed != EaWrcSource.Channels.Length)
-                return "Hay una versión antigua del formato de SimTelemetry: pulsa «Configurar EA WRC» (con el juego cerrado) para ver el mapa y el nombre de cada tramo y coche.";
+                return "Hay una versión antigua del formato de APEX: pulsa «Configurar EA WRC» (con el juego cerrado) para ver el mapa y el nombre de cada tramo y coche.";
         }
         catch (Exception)
         {
@@ -204,8 +204,8 @@ public static class GameConfigurator
             return $"Configurado, pero el juego no se ha abierto desde entonces (último arranque {logTime:dd/MM HH:mm}). " +
                    "Cierra EA WRC del todo y vuelve a abrirlo.";
         if (errors.Count > 0) return "EA WRC dio errores al cargar la telemetría: " + string.Join(" | ", errors);
-        return loaded ? $"EA WRC cargó el formato de SimTelemetry ✔ (arranque {logTime:dd/MM HH:mm})"
-                      : "EA WRC arrancó pero no cargó el formato de SimTelemetry: vuelve a pulsar \"Configurar EA WRC\".";
+        return loaded ? $"EA WRC cargó el formato de APEX ✔ (arranque {logTime:dd/MM HH:mm})"
+                      : "EA WRC arrancó pero no cargó el formato de APEX: vuelve a pulsar \"Configurar EA WRC\".";
     }
 
     // ---------------- Forza (Microsoft Store / Game Pass) ----------------

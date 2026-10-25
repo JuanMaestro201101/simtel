@@ -163,7 +163,7 @@ internal static class SelfTest
             try
             {
                 string page = http.GetStringAsync(phone.Url).GetAwaiter().GetResult();
-                Check(page.Contains("<title>SimTelemetry</title>"), "teléfono: página");
+                Check(page.Contains("<title>APEX</title>"), "teléfono: página");
                 var wrong = http.GetAsync($"http://127.0.0.1:{phone.Port}/otro-codigo").GetAwaiter().GetResult();
                 Check(wrong.StatusCode == System.Net.HttpStatusCode.NotFound, $"teléfono: sin código → {(int)wrong.StatusCode}");
                 using var stream = http.GetStreamAsync(phone.Url + "/stream").GetAwaiter().GetResult();

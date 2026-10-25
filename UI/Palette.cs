@@ -14,7 +14,7 @@ namespace SimTelemetry.UI;
 /// </summary>
 public static class Palette
 {
-    /// <summary>Colores para elegir en Apariencia ("" = el original: amarillo sobre gris azulado).</summary>
+    /// <summary>Colores para elegir en Apariencia ("" = el original: amarillo de señalización sobre negro carbono).</summary>
     public static readonly (string Name, string Hex)[] Choices =
     {
         ("Original", ""), ("Naranja", "#FF8A3D"), ("Rojo", "#FF5263"), ("Rosa", "#F062A8"),
@@ -46,7 +46,10 @@ public static class Palette
     /// <summary>Aviso y objetivo (la banda amarilla del Entrenador): no sigue al color elegido, para que signifique siempre lo mismo.</summary>
     public static Color Warn { get; private set; }
     public static Color Info { get; private set; }
+    /// <summary>La referencia, que por defecto es tu mejor vuelta: morado, como el mejor tiempo en una pantalla de tiempos.</summary>
     public static Color Reference { get; private set; }
+    /// <summary>Fondo de las etiquetas en color de referencia (p. ej. «referencia automática: tu mejor vuelta»).</summary>
+    public static Color ReferenceTint { get; private set; }
 
     // Pedales y series de las gráficas
     public static Color Throttle { get; private set; }
@@ -72,7 +75,7 @@ public static class Palette
     public static Color TrainerCursor { get; private set; }
 
     // Lo que se dibuja sobre el juego (y el icono de la app): igual con cualquier tema, tiene que verse sobre cualquier juego
-    public static readonly Color OverlayAccent = Color.FromRgb(0xFF, 0xC1, 0x07);
+    public static readonly Color OverlayAccent = Color.FromRgb(0xFF, 0xD6, 0x0A);
     public static readonly Color OverlayThrottle = Color.FromRgb(0x34, 0xD0, 0x58);
     public static readonly Color OverlayBrake = Color.FromRgb(0xFF, 0x4D, 0x4D);
     public static readonly Color OverlayClutch = Color.FromRgb(0x4D, 0xA3, 0xFF);
@@ -85,9 +88,9 @@ public static class Palette
     public static readonly Color PedalTrack = Color.FromArgb(0x50, 0xFF, 0xFF, 0xFF);
     public static readonly Color PedalGrid = Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF);
     public static readonly Color InfoBg = Color.FromArgb(0xE6, 0x12, 0x15, 0x1B);
-    public static readonly Color InfoBorder = Color.FromArgb(0x80, 0xFF, 0xC1, 0x07);
+    public static readonly Color InfoBorder = Color.FromArgb(0x80, 0xFF, 0xD6, 0x0A);
     public static readonly Color InfoDim = Color.FromRgb(0xA8, 0xB1, 0xBF);
-    public static readonly Color EditHint = Color.FromArgb(0xD0, 0xFF, 0xC1, 0x07);
+    public static readonly Color EditHint = Color.FromArgb(0xD0, 0xFF, 0xD6, 0x0A);
     public static readonly Color EditHintText = Color.FromRgb(0x11, 0x11, 0x11);
 
     /// <summary>Tras <see cref="Apply"/>: lo que se dibuja en código (gráficas, mapa, entrenador) rehace sus pinceles.</summary>
@@ -110,8 +113,8 @@ public static class Palette
     {
         Light = light;
         Color? chosen = Parse(color);
-        // El original es un gris azulado poco saturado; un color elegido tiñe el fondo con su tono.
-        var (h, s) = chosen is Color c ? (ToHsl(c).H, light ? 0.40 : 0.45) : (218.0, 0.20);
+        // El original es negro carbono casi neutro; un color elegido tiñe el fondo con su tono.
+        var (h, s) = chosen is Color c ? (ToHsl(c).H, light ? 0.40 : 0.45) : (220.0, 0.09);
         if (light)
         {
             Bg = Hsl(h, s, 0.935); Panel = Hsl(h, s * 0.8, 0.99); PanelAlt = Hsl(h, s, 0.955);
@@ -120,8 +123,8 @@ public static class Palette
         }
         else
         {
-            Bg = Hsl(h, s, 0.075); Panel = Hsl(h, s * 0.92, 0.11); PanelAlt = Hsl(h, s * 0.9, 0.145);
-            Line = Hsl(h, s * 0.8, 0.20); Hover = Hsl(h, s * 0.85, 0.205); Pressed = Hsl(h, s * 0.8, 0.25); ListHover = Hsl(h, s, 0.15);
+            Bg = Hsl(h, s, 0.045); Panel = Hsl(h, s * 0.92, 0.072); PanelAlt = Hsl(h, s * 0.9, 0.11);
+            Line = Hsl(h, s * 0.8, 0.165); Hover = Hsl(h, s * 0.85, 0.17); Pressed = Hsl(h, s * 0.8, 0.22); ListHover = Hsl(h, s, 0.11);
             Text = Hsl(h, Math.Min(1, s * 1.4), 0.925); Dim = Hsl(h, s * 0.65, 0.60); Off = Hsl(h, s * 0.5, 0.50);
         }
         // El acento también se usa como texto (enlaces, notas): 4,5:1 sobre todas las superficies.
@@ -131,16 +134,18 @@ public static class Palette
         OnFill = light ? Colors.White : Color.FromRgb(0x11, 0x11, 0x11);
 
         // Mismos significados en los dos temas; en el claro, tonos más oscuros para que se lean sobre blanco.
-        Good = Rgb(light ? 0x1A7F37 : 0x34D058);
-        Bad = Rgb(light ? 0xCF222E : 0xFF4D4D);
-        Warn = Rgb(light ? 0x9A6700 : 0xFFC107);
+        // Colores de la pantalla de tiempos: verde mejora, amarillo más lento, morado el mejor (la referencia).
+        Good = Rgb(light ? 0x1A7F37 : 0x2FD46E);
+        Bad = Rgb(light ? 0xCF222E : 0xFF453A);
+        Warn = Rgb(light ? 0x9A6700 : 0xFFD60A);
         Info = Rgb(light ? 0x0550AE : 0x7AB8FF);
-        Reference = Rgb(light ? 0xBC4C00 : 0xFFA94D);
+        Reference = Readable(Rgb(light ? 0x7C3AED : 0xB57EFF), 4.5, Bg, Panel, PanelAlt);
+        ReferenceTint = Mix(Panel, Reference, light ? 0.10 : 0.16);
         Throttle = Good;
         Brake = Bad;
         Clutch = Rgb(light ? 0x0969DA : 0x4DA3FF);
         LapMine = Rgb(light ? 0x1F2328 : 0xE6EDF3);
-        Steering = Rgb(light ? 0x8250DF : 0xB794F4);
+        Steering = Rgb(light ? 0xBF3989 : 0xF472B6);
         Gear = Rgb(light ? 0x1B7C83 : 0x8BD5CA);
 
         ChartBg = Mix(Bg, Panel, 0.4);

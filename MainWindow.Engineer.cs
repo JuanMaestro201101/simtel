@@ -121,7 +121,7 @@ public partial class MainWindow
     private void OnInstallVoices(object sender, RoutedEventArgs e)
     {
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:speech") { UseShellExecute = true }); }
-        catch (Exception) { MessageBox.Show(this, "Abre Configuración de Windows → Hora e idioma → Voz → Agregar voces.", "SimTelemetry"); }
+        catch (Exception) { MessageBox.Show(this, "Abre Configuración de Windows → Hora e idioma → Voz → Agregar voces.", "APEX"); }
     }
 
     private void OnRefreshVoices(object sender, RoutedEventArgs e) => _app.Engineer.ConfigureVoice();

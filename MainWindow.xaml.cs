@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -122,11 +123,11 @@ public partial class MainWindow : Window
             if (_app.Settings.CloseToTray == null)
             {
                 var answer = MessageBox.Show(this,
-                    "¿Quieres que SimTelemetry siga funcionando en segundo plano al cerrar la ventana?\n\n" +
+                    "¿Quieres que APEX siga funcionando en segundo plano al cerrar la ventana?\n\n" +
                     "• Sí: sigue grabando vueltas y mostrando el overlay mientras juegas (icono junto al reloj).\n" +
                     "• No: se cierra del todo, overlay incluido.\n\n" +
                     "Puedes cambiarlo más tarde en la pestaña Overlay.",
-                    "Cerrar SimTelemetry", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                    "Cerrar APEX", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
                 if (answer == MessageBoxResult.Cancel)
                 {
                     e.Cancel = true;
@@ -207,7 +208,7 @@ public partial class MainWindow : Window
             var gameSource = game == null ? null : hub.Sources.FirstOrDefault(x => x.Id == game.SourceId);
             LiveGame.Text = game != null ? $"{game.Name} está abierto, pero no llega telemetría" : "Ningún juego conectado";
             LiveTrack.Text = game == null
-                ? "Abre un juego compatible y sal a pista. Algunos juegos necesitan activar la telemetría: mira la pestaña \"Configurar juegos\"."
+                ? "Abre un juego compatible y sal a pista. Algunos juegos necesitan activar la telemetría: mira la pestaña \"Juegos\"."
                 : gameSource != null && gameSource.PacketCount > 0
                     ? $"Llegan datos del juego, pero no se pueden usar: {gameSource.Status}"
                     : game.Hint;
@@ -296,7 +297,10 @@ public partial class MainWindow : Window
 
         if (sessions.Count == 0)
         {
-            AnalysisTitle.Text = "Todavía no hay vueltas grabadas";
+            AnalysisTitle.Text = "TODAVÍA NO HAY VUELTAS GRABADAS";
+            LapBigTime.Text = LapBigDelta.Text = RefLine.Text = "";
+            RefChip.Visibility = Visibility.Collapsed;
+            SectorRow.Children.Clear();
             AnalysisSubtitle.Text = "Conduce con la app abierta: cada vuelta (o tramo de rally) se guarda sola.";
         }
     }
@@ -384,8 +388,8 @@ public partial class MainWindow : Window
 
     private void FillLapList(SessionItem session, string? select)
     {
-        var best = session.Laps.Where(l => l.Completed).OrderBy(l => l.LapTime).FirstOrDefault();
-        var items = session.Laps.Select(l => new LapItem(l, l == best, _manualReference?.FilePath == l.FilePath)).ToList();
+        var best = session.Laps.Where(l => l.Completed && l.Valid && !l.TimeBased).MinBy(l => l.LapTime);
+        var items = session.Laps.Select(l => new LapItem(l, best, _manualReference?.FilePath == l.FilePath)).ToList();
         LapList.ItemsSource = items;
         LapList.SelectedItem = items.FirstOrDefault(i => i.Info.FilePath == select);
     }
@@ -465,18 +469,27 @@ public partial class MainWindow : Window
         var tips = LapAnalyzer.BuildTips(lap, stats, reference, refStats, cmp);
 
         string where = string.Join(" · ", new[] { ShortGame(info.Game), info.Track.Length > 0 ? TrackLabel(info) : "", Tracks.CarCatalog.DisplayName(info.Car) }.Where(x => !string.IsNullOrEmpty(x)));
-        AnalysisTitle.Text = info.TimeBased
-            ? $"Sesión de pedales {info.Number}: {info.TimeText}  —  {info.Game}"
-            : $"Vuelta {info.Number}: {info.TimeText}{(info.Completed ? "" : " (incompleta)")}{(info.Valid ? "" : " (inválida)")}  —  {where}";
+        AnalysisTitle.Text = (info.TimeBased ? $"Sesión de pedales {info.Number} · {info.Game}"
+            : $"Vuelta {info.Number}{(info.Completed ? "" : " (incompleta)")}{(info.Valid ? "" : " (inválida)")} · {where}").ToUpper();
+        LapBigTime.Text = info.TimeText;
+        // Diferencia de la vuelta entera si las dos están completas; si no, lo acumulado hasta donde llega la comparación.
+        double? delta = refInfo != null && info.Completed && refInfo.Completed && !info.TimeBased ? info.LapTime - refInfo.LapTime
+            : cmp != null && cmp.Delta.Length > 0 ? cmp.Delta[^1] : null;
+        LapBigDelta.Text = delta is double dd ? dd.ToString("+0.000;-0.000", CultureInfo.InvariantCulture) : "";
+        LapBigDelta.Foreground = delta < 0 ? GoodBrush : Res("Warn");
+        RefChip.Visibility = refInfo != null ? Visibility.Visible : Visibility.Collapsed;
+        RefChipText.Text = manual ? "REFERENCIA FIJADA POR TI" : "REFERENCIA AUTOMÁTICA · TU MEJOR VUELTA";
+        RefLine.Text = refInfo == null ? "" : $"vs vuelta {refInfo.Number} · {refInfo.TimeText}";
         const string notReference = "no sirve de referencia: ";
         AnalysisSubtitle.Text = info.EndReason.Contains(notReference)
             ? "Esta vuelta no se usa como referencia: " + info.EndReason[(info.EndReason.IndexOf(notReference) + notReference.Length)..] + "."
             : refInfo != null
-            ? $"Comparada con: {Describe(refInfo)} ({(manual ? "fijada por ti" : "tu mejor vuelta aquí")})" +
-              (cmp != null && cmp.Delta.Length > 0 ? $"  ·  diferencia {cmp.Delta[^1]:+0.000;-0.000} s" : "")
+            ? (refInfo.SessionFolder != info.SessionFolder ? $"La referencia es de otra sesión: {Describe(refInfo)}." : "")
             : info.TimeBased
                 ? "Sesión de pedales grabada con el volante (el juego no enviaba telemetría): sin vueltas ni velocidad, pero con toda tu técnica de pedales. Mira la pestaña «Frenadas»."
                 : "Sin referencia: graba más vueltas completas en este circuito/tramo para comparar.";
+        AnalysisSubtitle.Visibility = AnalysisSubtitle.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        FillSectors(info, lap, reference);
 
         Chart.XUnit = info.TimeBased ? "s" : "m";
         Chart.XLabel = info.TimeBased ? v => TimeSpan.FromSeconds(Math.Max(0, v)).ToString(@"m\:ss") : null;
@@ -486,6 +499,41 @@ public partial class MainWindow : Window
         TipList.ItemsSource = tips.Select(t => new TipItem(t, _app.Settings.TipsDetailed)).ToList();
         TrackMap.SetData(lap, reference, cmp, stats, refStats);
         BrakeList.ItemsSource = stats.BrakeZones.Select((z, i) => new BrakeItem(z, i + 1, lap.Info.Abs, LapAnalyzer.NoSpeed(lap))).ToList();
+    }
+
+    /// <summary>Tres sectores de igual longitud y la velocidad máxima, con la diferencia frente a la referencia (verde ganas, amarillo pierdes).</summary>
+    private void FillSectors(LapInfo info, LapData lap, LapData? reference)
+    {
+        SectorRow.Children.Clear();
+        if (info.TimeBased || !info.Completed || lap.Count < 10) return;
+        double d0 = lap.Distance[0], d3 = lap.Distance[^1];
+        double T(LapData l, double d) => LapAnalyzer.Interpolate(l.Distance, l.Time, d);
+        for (int k = 0; k < 3; k++)
+        {
+            double a = d0 + (d3 - d0) * k / 3, b = d0 + (d3 - d0) * (k + 1) / 3;
+            double mine = T(lap, b) - T(lap, a);
+            double? diff = reference != null ? mine - (T(reference, b) - T(reference, a)) : null;
+            AddSector($"SECTOR {k + 1}", mine.ToString("0.000", CultureInfo.InvariantCulture), diff?.ToString("+0.000;-0.000", CultureInfo.InvariantCulture) ?? "", diff < 0 ? GoodBrush : diff > 0 ? Res("Warn") : null);
+        }
+        if (!LapAnalyzer.NoSpeed(lap))
+            AddSector("VEL. MÁXIMA", $"{lap.Speed.Max():0}", reference != null ? $"km/h · ref. {reference.Speed.Max():0}" : "km/h", null);
+    }
+
+    private void AddSector(string label, string value, string detail, Brush? mark)
+    {
+        var cell = new StackPanel();
+        cell.Children.Add(new TextBlock { Text = label, Style = (Style)FindResource("H2"), Margin = new Thickness(0) });
+        cell.Children.Add(new TextBlock { Text = value, Style = (Style)FindResource("Figure"), FontSize = 24 });
+        cell.Children.Add(new TextBlock { Text = detail, FontFamily = (FontFamily)FindResource("Mono"), Foreground = mark ?? Res("Dim") });
+        SectorRow.Children.Add(new Border
+        {
+            Child = cell,
+            Background = Res("Panel"),
+            BorderBrush = mark ?? Res("Line"),
+            BorderThickness = new Thickness(0, 3, 0, 0),
+            Padding = new Thickness(14, 8, 14, 8),
+            Margin = new Thickness(0, 0, SectorRow.Children.Count < 3 ? 10 : 0, 0),
+        });
     }
 
     private static IEnumerable<ChartPane> BuildPanes(LapData lap, LapData? reference, Comparison? cmp)
@@ -969,7 +1017,7 @@ public partial class MainWindow : Window
     {
         ConfigResult.Visibility = Visibility.Visible;
         ConfigResult.Text = text;
-        MessageBox.Show(this, text, "SimTelemetry", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show(this, text, "APEX", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void OnConfigureDirt(object sender, RoutedEventArgs e)
@@ -991,12 +1039,12 @@ public partial class MainWindow : Window
         var ports = new[] { Parse(PortDirt.Text), Parse(PortWrc.Text), Parse(PortForza.Text), Parse(PortOutGauge.Text) };
         if (ports.Any(p => p == null))
         {
-            MessageBox.Show(this, "Los puertos deben ser números entre 1024 y 65535.", "SimTelemetry", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, "Los puertos deben ser números entre 1024 y 65535.", "APEX", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
         if (ports.Distinct().Count() != ports.Length)
         {
-            MessageBox.Show(this, "Cada juego necesita un puerto distinto.", "SimTelemetry", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, "Cada juego necesita un puerto distinto.", "APEX", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
         var s = _app.Settings;
@@ -1128,19 +1176,35 @@ public partial class MainWindow : Window
         public Brush ScoreBrush { get; }
     }
 
+    /// <summary>Fila de la torre de vueltas: número, tiempo y diferencia con la mejor (morado), como en una pantalla de tiempos.</summary>
     private sealed class LapItem
     {
-        public LapItem(LapInfo info, bool best, bool reference)
+        public LapItem(LapInfo info, LapInfo? best, bool reference)
         {
             Info = info;
-            Badges = (best ? "★ " : "") + (reference ? "REF" : "");
+            bool isBest = info == best;
+            static Brush R(string key) => (Brush)Application.Current.Resources[key];
+            Num = info.TimeBased ? $"P{info.Number}" : info.Number.ToString();
+            Diff = info.TimeBased ? "" : reference ? "REF" : isBest ? "MEJOR" : !info.Valid ? "INVÁL." : !info.Completed ? "INCOMPL."
+                 : best != null ? (info.LapTime - best.LapTime).ToString("+0.000", CultureInfo.InvariantCulture) : "";
+            bool dim = !info.TimeBased && (!info.Valid || !info.Completed);
+            NumBrush = isBest ? R("Reference") : R("Dim");
+            TimeBrush = isBest ? R("Reference") : dim ? R("Dim") : R("Text");
+            DiffBrush = isBest || reference ? R("Reference") : dim ? R("Dim") : R("Warn");
+            TimeWeight = isBest ? FontWeights.Bold : FontWeights.Normal;
+            Strike = !info.Valid && !info.TimeBased ? TextDecorations.Strikethrough : null;
         }
 
         public LapInfo Info { get; }
-        public string Title => Info.TimeBased ? $"Pedales {Info.Number}" : $"Vuelta {Info.Number}";
+        public string Num { get; }
         public string Time => Info.TimeText;
+        public string Diff { get; }
+        public Brush NumBrush { get; }
+        public Brush TimeBrush { get; }
+        public Brush DiffBrush { get; }
+        public FontWeight TimeWeight { get; }
+        public TextDecorationCollection? Strike { get; }
         public string Note => Info.TimeBased ? $"sesión con el volante · {Info.Date:HH:mm:ss}" : (Info.Completed ? "" : "incompleta · ") + (Info.Valid ? "" : Info.EndReason.Contains("no sirve de referencia") ? "no sirve de referencia · " : "inválida · ") + $"{Info.Length / 1000:0.00} km · {Info.Date:HH:mm:ss}";
-        public string Badges { get; }
     }
 
     private sealed class TipItem

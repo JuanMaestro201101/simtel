@@ -9,7 +9,7 @@ using SimTelemetry.Setup;
 
 namespace SimTelemetry;
 
-/// <summary>Pestaña "Configurar juegos": comprobaciones de estado y permiso de red para Forza.</summary>
+/// <summary>Pestaña "Juegos": comprobaciones de estado y permiso de red para Forza.</summary>
 public partial class MainWindow
 {
     private List<string>? _forzaMissing;

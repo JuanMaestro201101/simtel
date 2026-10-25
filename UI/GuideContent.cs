@@ -16,7 +16,7 @@ public static class GuideContent
         var right = new StackPanel();
 
         left.Children.Add(Card("Parámetros ideales de una frenada",
-            Para("Son los valores con los que SimTelemetry puntúa cada frenada en la pestaña Análisis. Úsalos como guía: cada coche y cada curva tienen matices."),
+            Para("Son los valores con los que APEX puntúa cada frenada en la pestaña Análisis. Úsalos como guía: cada coche y cada curva tienen matices."),
             Table(
                 ("Ataque (de 0 a la presión máxima)", "≤ 0,2 s. Pisa con decisión: los metros en los que todavía no frenas a tope son metros perdidos."),
                 ("Presión máxima con ABS", "90–100 %. En ACC (GT3/GT4) el ABS evita el bloqueo: frena fuerte de verdad."),

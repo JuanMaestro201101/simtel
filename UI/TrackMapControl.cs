@@ -206,7 +206,7 @@ public sealed class TrackMapControl : FrameworkElement
             dc.DrawLine(pen, a, b);
         }
 
-        // Puntos de frenada: tuyos (rojo) y de la referencia (aro naranja).
+        // Puntos de frenada: tuyos (rojo) y de la referencia (aro morado).
         if (_refStats != null && _ref != null)
             foreach (var z in _refStats.BrakeZones)
                 dc.DrawEllipse(null, RefBrakePen, At(_ref, z.StartDistance, P), 5, 5);
@@ -233,7 +233,7 @@ public sealed class TrackMapControl : FrameworkElement
         }
 
         dc.Pop();
-        string legend = _cmp != null ? "verde ganas · rojo pierdes · naranja ref." : "azul lento → rojo rápido";
+        string legend = _cmp != null ? "verde ganas · rojo pierdes · morado ref." : "azul lento → rojo rápido";
         var lt = Text(legend + " · ● frenadas" + (zoom > 1 ? $" · ×{zoom:0.#}, doble clic: ver todo" : " · rueda: zoom"), 10, Dim, dpi);
         dc.DrawText(lt, new Point(8, h - lt.Height - 4));
     }

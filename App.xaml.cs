@@ -62,17 +62,17 @@ public partial class App : Application
         _singleInstance = new Mutex(true, testRun ? "SimTelemetry.SingleInstance.Test" : "SimTelemetry.SingleInstance", out bool first);
         if (!first)
         {
-            if (!hidden) MessageBox.Show("SimTelemetry ya está abierto (mira en la bandeja del sistema, junto al reloj).",
-                "SimTelemetry", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (!hidden) MessageBox.Show("APEX ya está abierto (mira en la bandeja del sistema, junto al reloj).",
+                "APEX", MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown();
             return;
         }
 
-        Log.Info($"SimTelemetry {typeof(App).Assembly.GetName().Version} arrancando");
+        Log.Info($"APEX {typeof(App).Assembly.GetName().Version} arrancando");
         DispatcherUnhandledException += (_, args) =>
         {
             Log.Error("Error no controlado", args.Exception);
-            if (!hidden) MessageBox.Show("Error inesperado: " + args.Exception.Message, "SimTelemetry", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (!hidden) MessageBox.Show("Error inesperado: " + args.Exception.Message, "APEX", MessageBoxButton.OK, MessageBoxImage.Error);
             args.Handled = true;
         };
 
@@ -444,11 +444,11 @@ public partial class App : Application
         _tray = new Forms.NotifyIcon
         {
             Icon = AppIcon.CreateIcon(),
-            Text = "SimTelemetry",
+            Text = "APEX",
             Visible = true,
         };
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add("Abrir SimTelemetry", null, (_, _) => ShowMain());
+        menu.Items.Add("Abrir APEX", null, (_, _) => ShowMain());
         menu.Items.Add("Mover / redimensionar overlay", null, (_, _) =>
         {
             ShowMain();
@@ -470,7 +470,7 @@ public partial class App : Application
         if (Settings.TrayHintShown || _tray == null) return;
         Settings.TrayHintShown = true;
         Settings.Save();
-        _tray.ShowBalloonTip(4000, "SimTelemetry sigue funcionando",
+        _tray.ShowBalloonTip(4000, "APEX sigue funcionando",
             "La telemetría y el overlay siguen activos. Haz doble clic en este icono para volver a abrir la app.",
             Forms.ToolTipIcon.Info);
     }
@@ -484,7 +484,7 @@ public partial class App : Application
 
     public void ExitApp()
     {
-        Log.Info("SimTelemetry cerrándose");
+        Log.Info("APEX cerrándose");
         Recorder.Flush();
         WheelRecorder.Flush();
         Settings.Save();
