@@ -11,9 +11,9 @@
 
         <!-- Sólo visible en modo edición: marco, tiradores y ayuda -->
         <Grid x:Name="EditFrame" Visibility="Collapsed" Background="#01000000">
-            <Border BorderThickness="2" CornerRadius="8" BorderBrush="{StaticResource OverlayAccent}" />
+            <Border BorderThickness="2" CornerRadius="2" BorderBrush="{StaticResource OverlayAccent}" />
             <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14,4,14,0" Padding="6,1"
-                    Background="{StaticResource EditHint}" CornerRadius="3" IsHitTestVisible="False">
+                    Background="{StaticResource EditHint}" CornerRadius="0" IsHitTestVisible="False">
                 <TextBlock x:Name="EditHint" FontSize="10" Foreground="{StaticResource EditHintText}" FontWeight="SemiBold"
                            Text="Arrastra · bordes = tamaño · rueda = escala" TextTrimming="CharacterEllipsis" />
             </Border>

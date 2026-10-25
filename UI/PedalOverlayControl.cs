@@ -26,8 +26,8 @@ public sealed class PedalOverlayControl : FrameworkElement
     private static readonly Pen ThrottlePen = Freeze(new Pen(ThrottleBrush, 2.2) { LineJoin = PenLineJoin.Round });
     private static readonly Pen BrakePen = Freeze(new Pen(BrakeBrush, 2.2) { LineJoin = PenLineJoin.Round });
     private static readonly Pen ClutchPen = Freeze(new Pen(ClutchBrush, 1.4) { LineJoin = PenLineJoin.Round });
-    private static readonly Typeface Face = new(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
-    private static readonly Typeface BoldFace = new(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
+    private static readonly Typeface Face = new(new FontFamily("Bahnschrift, Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Condensed);
+    private static readonly Typeface BoldFace = new(new FontFamily("Bahnschrift, Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Condensed);
 
     private readonly double[] _t = new double[PedalBuffer.Capacity];
     private readonly float[] _thr = new float[PedalBuffer.Capacity];
@@ -79,7 +79,7 @@ public sealed class PedalOverlayControl : FrameworkElement
 
         byte alpha = (byte)(Math.Clamp(s.BackgroundOpacity, 0, 1) * 255);
         if (_bg == null || _bg.Color.A != alpha) _bg = Freeze(new SolidColorBrush(Palette.Backdrop with { A = alpha }));
-        dc.DrawRoundedRectangle(_bg, null, new Rect(0, 0, w, h), 8, 8);
+        dc.DrawRoundedRectangle(_bg, null, new Rect(0, 0, w, h), 2, 2);
 
         bool live = HasLiveData;
         bool demo = !live && DemoWhenIdle;
@@ -201,7 +201,7 @@ public sealed class PedalOverlayControl : FrameworkElement
         var brush = delta <= 0 ? ThrottleBrush : BrakeBrush;
         var text = Text(delta.ToString("+0.00;-0.00", CultureInfo.InvariantCulture), Math.Clamp(area.Height * 0.2, 12, 26), brush, BoldFace, dpi);
         var box = new Rect(area.Right - text.Width - 10, area.Top + 2, text.Width + 8, text.Height + 2);
-        dc.DrawRoundedRectangle(DeltaBack, null, box, 4, 4);
+        dc.DrawRoundedRectangle(DeltaBack, null, box, 1, 1);
         dc.DrawText(text, new Point(box.X + 4, box.Y + 1));
         return box.Bottom;
     }
@@ -212,7 +212,7 @@ public sealed class PedalOverlayControl : FrameworkElement
         var brush = sector.Delta <= 0 ? ThrottleBrush : BrakeBrush;
         var text = Text($"C{sector.Corner} {sector.Delta.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)}", Math.Clamp(area.Height * 0.14, 10, 18), brush, Face, dpi);
         var box = new Rect(area.Right - text.Width - 10, top + 3, text.Width + 8, text.Height + 2);
-        dc.DrawRoundedRectangle(DeltaBack, null, box, 4, 4);
+        dc.DrawRoundedRectangle(DeltaBack, null, box, 1, 1);
         dc.DrawText(text, new Point(box.X + 4, box.Y + 1));
     }
 
@@ -258,10 +258,10 @@ public sealed class PedalOverlayControl : FrameworkElement
     {
         double labelH = Math.Clamp(r.Width * 0.75, 11, 16);
         var barRect = new Rect(r.X, r.Y, r.Width, Math.Max(4, r.Height - labelH - 2));
-        dc.DrawRoundedRectangle(BarBackBrush, null, barRect, 3, 3);
+        dc.DrawRoundedRectangle(BarBackBrush, null, barRect, 1, 1);
         double fillH = barRect.Height * Math.Clamp(value, 0, 1);
         if (fillH > 0.5)
-            dc.DrawRoundedRectangle(brush, null, new Rect(barRect.X, barRect.Bottom - fillH, barRect.Width, fillH), 3, 3);
+            dc.DrawRoundedRectangle(brush, null, new Rect(barRect.X, barRect.Bottom - fillH, barRect.Width, fillH), 1, 1);
 
         var text = Text(((int)Math.Round(value * 100)).ToString(CultureInfo.InvariantCulture), labelH * 0.72, TextBrush, Face, dpi);
         dc.DrawText(text, new Point(r.X + (r.Width - text.Width) / 2, r.Bottom - text.Height));

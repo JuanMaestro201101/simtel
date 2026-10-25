@@ -42,7 +42,7 @@ public sealed class InfoOverlayWindow : Window
             Background = new SolidColorBrush(Palette.InfoBg),
             BorderBrush = new SolidColorBrush(Palette.InfoBorder),
             BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(8),
+            CornerRadius = new CornerRadius(2),
             Padding = new Thickness(14, 10, 14, 10),
             Child = panel,
         };

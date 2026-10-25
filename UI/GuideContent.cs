@@ -135,7 +135,7 @@ public static class GuideContent
     internal static Border Card(string title, params UIElement[] content)
     {
         var panel = new StackPanel();
-        panel.Children.Add(new TextBlock { Text = title, Style = (Style)Application.Current.FindResource("H2") });
+        panel.Children.Add(new TextBlock { Text = title.ToUpper(), Style = (Style)Application.Current.FindResource("H2") });
         foreach (var c in content) panel.Children.Add(c);
         return new Border { Style = (Style)Application.Current.FindResource("Card"), Child = panel };
     }

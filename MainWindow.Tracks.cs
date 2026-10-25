@@ -107,7 +107,7 @@ public partial class MainWindow
     {
         var info = item.Info;
         var root = new StackPanel();
-        root.Children.Add(new TextBlock { Text = info?.Name ?? item.Track ?? "", FontSize = 22, FontWeight = FontWeights.SemiBold });
+        root.Children.Add(new TextBlock { Text = (info?.Name ?? item.Track ?? "").ToUpper(), Style = (Style)FindResource("Figure"), FontSize = 30 });
         var facts = new List<string>();
         if (item.Game != null) facts.Add(item.Game);
         if (info != null) facts.Add($"{info.Country} · {info.LengthKm:0.0##} km · {info.Turns} curvas");
