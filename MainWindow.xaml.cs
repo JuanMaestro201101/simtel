@@ -233,6 +233,8 @@ public partial class MainWindow : Window
         _lapsDirty = true;
         _progressDirty = true;
         _tracksDirty = true;
+        // Si estabas viendo esta sesión (o nada), Análisis salta a la vuelta nueva; la referencia sigue siendo la más rápida.
+        if (info.Completed && (_currentLap == null || _currentLap.SessionFolder == info.SessionFolder)) _currentLap = info;
         if (Tabs.SelectedItem == TabAnalysis) RefreshLaps(_currentLap?.FilePath);
         else if (Tabs.SelectedItem == TabProgress) RefreshProgress();
     }

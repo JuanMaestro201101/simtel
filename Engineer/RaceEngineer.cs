@@ -407,8 +407,8 @@ public sealed class RaceEngineer : IDisposable
                 parts.Add(fuel);
                 Defer(string.Join(". ", parts.Where(p => p.Length > 0).Select(p => char.ToUpper(p[0]) + p[1..])) + ".");
 
-                // La vuelta nueva pasa a ser la referencia de los avisos.
-                if (newBest) LoadPlan(_key, info.Game, info.Track, info.Car, announce: false);
+                // La vuelta nueva pasa a ser la referencia de los avisos (y una válida con este coche sustituye a la de otro coche).
+                if (newBest || (info.Valid && plan is { SameCar: false })) LoadPlan(_key, info.Game, info.Track, info.Car, announce: false);
             }
             catch (Exception ex)
             {
