@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using SimTelemetry.Analysis;
 using SimTelemetry.Recording;
@@ -12,6 +13,7 @@ namespace SimTelemetry.UI;
 /// <summary>
 /// Mapa del circuito visto desde arriba con tu trazada. Con referencia, colorea dónde ganas (verde) y
 /// dónde pierdes (rojo) tiempo y dibuja la trazada de referencia para comparar las líneas.
+/// Rueda: zoom (con zoom el asfalto va a su anchura real, para ver tu línea dentro de la pista) · arrastrar: mover · doble clic: ver todo.
 /// </summary>
 public sealed class TrackMapControl : FrameworkElement
 {
@@ -42,11 +44,20 @@ public sealed class TrackMapControl : FrameworkElement
     private Comparison? _cmp;
     private LapStats? _stats, _refStats;
     private double? _cursor;
+    private double _zoom = 1;
+    private Vector _pan;
+    private Point? _dragFrom;
+    private string _bounds = "";
+    private const double TrackWidthM = 12; // anchura típica de un circuito, para dibujar el asfalto a escala con zoom
 
     public void SetData(LapData? lap, LapData? reference, Comparison? cmp, LapStats? stats, LapStats? refStats)
     {
         _lap = lap != null && lap.HasPosition ? lap : null;
         _ref = reference != null && reference.HasPosition ? reference : null;
+        // Otra vuelta del mismo circuito conserva el zoom: así comparas la misma curva vuelta a vuelta.
+        string bounds = _lap == null ? "" : $"{_lap.PosX.Min() / 50:0}|{_lap.PosZ.Min() / 50:0}|{_lap.PosX.Max() / 50:0}|{_lap.PosZ.Max() / 50:0}";
+        if (bounds != _bounds) ResetZoom();
+        _bounds = bounds;
         _cmp = cmp;
         _stats = stats;
         _refStats = refStats;
@@ -66,6 +77,76 @@ public sealed class TrackMapControl : FrameworkElement
         InvalidateVisual();
     }
 
+    public void ResetZoom()
+    {
+        _zoom = 1;
+        _pan = default;
+        InvalidateVisual();
+    }
+
+    /// <summary>Acerca el mapa al tramo entre dos distancias de tu vuelta (la curva elegida en «Qué mejorar» o «Frenadas»).</summary>
+    public void ZoomTo(double from, double to)
+    {
+        if (_lap == null || ActualWidth <= 0) return;
+        var (P, _) = BaseTransform();
+        var pts = Enumerable.Range(0, _lap.Count).Where(i => _lap.Distance[i] >= from && _lap.Distance[i] <= to)
+            .Select(i => P(_lap.PosX[i], _lap.PosZ[i])).ToList();
+        if (pts.Count < 2) return;
+        double minX = pts.Min(p => p.X), maxX = pts.Max(p => p.X), minY = pts.Min(p => p.Y), maxY = pts.Max(p => p.Y);
+        var c0 = new Point(ActualWidth / 2, ActualHeight / 2);
+        _zoom = Math.Clamp(Math.Min((ActualWidth - 60) / Math.Max(20, maxX - minX), (ActualHeight - 80) / Math.Max(20, maxY - minY)), 1, 40);
+        _pan = -(new Point((minX + maxX) / 2, (minY + maxY) / 2) - c0) * _zoom;
+        InvalidateVisual();
+    }
+
+    protected override void OnMouseWheel(MouseWheelEventArgs e)
+    {
+        if (_lap == null) return;
+        var m = e.GetPosition(this);
+        var c0 = new Point(ActualWidth / 2, ActualHeight / 2);
+        var b = (m - c0 - _pan) / _zoom; // punto del mapa bajo el ratón, que debe quedarse quieto
+        _zoom = Math.Clamp(_zoom * (e.Delta > 0 ? 1.25 : 0.8), 1, 40);
+        _pan = _zoom == 1 ? default : m - c0 - b * _zoom;
+        InvalidateVisual();
+        e.Handled = true;
+    }
+
+    protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2) { ResetZoom(); return; }
+        _dragFrom = e.GetPosition(this);
+        CaptureMouse();
+    }
+
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+        if (_dragFrom is not Point from || e.LeftButton != MouseButtonState.Pressed) return;
+        var p = e.GetPosition(this);
+        _pan += p - from;
+        _dragFrom = p;
+        InvalidateVisual();
+    }
+
+    protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+    {
+        _dragFrom = null;
+        ReleaseMouseCapture();
+    }
+
+    /// <summary>Del mundo (x, z) a la pantalla sin zoom, con las dos trazadas encajadas; y cuántos píxeles mide un metro.</summary>
+    private (Func<double, double, Point> P, double Scale) BaseTransform()
+    {
+        double w = ActualWidth, h = ActualHeight;
+        var xs = _lap!.PosX.Concat(_ref?.PosX ?? Array.Empty<double>()).ToArray();
+        var zs = _lap.PosZ.Concat(_ref?.PosZ ?? Array.Empty<double>()).ToArray();
+        double minX = xs.Min(), maxX = xs.Max(), minZ = zs.Min(), maxZ = zs.Max();
+        const double pad = 18, top = 30;
+        double scale = Math.Min((w - pad * 2) / Math.Max(1, maxX - minX), (h - top - pad - 14) / Math.Max(1, maxZ - minZ));
+        double ox = pad + ((w - pad * 2) - (maxX - minX) * scale) / 2;
+        double oy = top + ((h - top - pad - 14) - (maxZ - minZ) * scale) / 2;
+        return ((x, z) => new Point(ox + (x - minX) * scale, oy + (maxZ - z) * scale), scale);
+    }
+
     protected override void OnRender(DrawingContext dc)
     {
         double w = ActualWidth, h = ActualHeight;
@@ -79,26 +160,31 @@ public sealed class TrackMapControl : FrameworkElement
             return;
         }
 
-        // Escala común para las dos trazadas, manteniendo proporciones (z hacia arriba).
-        var xs = _lap.PosX.Concat(_ref?.PosX ?? Array.Empty<double>()).ToArray();
-        var zs = _lap.PosZ.Concat(_ref?.PosZ ?? Array.Empty<double>()).ToArray();
-        double minX = xs.Min(), maxX = xs.Max(), minZ = zs.Min(), maxZ = zs.Max();
-        const double pad = 18, top = 30;
-        double scale = Math.Min((w - pad * 2) / Math.Max(1, maxX - minX), (h - top - pad - 14) / Math.Max(1, maxZ - minZ));
-        double ox = pad + ((w - pad * 2) - (maxX - minX) * scale) / 2;
-        double oy = top + ((h - top - pad - 14) - (maxZ - minZ) * scale) / 2;
-        Point P(double x, double z) => new(ox + (x - minX) * scale, oy + (maxZ - z) * scale);
+        // Escala común para las dos trazadas, manteniendo proporciones (z hacia arriba), más el zoom del usuario.
+        var (baseP, scale) = BaseTransform();
+        var c0 = new Point(w / 2, h / 2);
+        double zoom = _zoom;
+        var pan = _pan;
+        Point P(double x, double z) => c0 + (baseP(x, z) - c0) * zoom + pan;
+        var view = new Rect(-20, -20, w + 40, h + 40);
+        int detail = Math.Max(1, (int)(_lap.Count / (1500 * zoom)));
+        dc.PushClip(new RectangleGeometry(new Rect(0, 0, w, h), 8, 8));
 
-        // "Asfalto": la trazada de referencia (o la tuya) en gris grueso.
+        // "Asfalto": la trazada de referencia (o la tuya) en gris grueso; con zoom, a su anchura real.
         var basePath = _ref ?? _lap;
-        dc.DrawGeometry(null, TrackPen, Path(basePath, P));
-        if (_ref != null) dc.DrawGeometry(null, RefPen, Path(_ref, P));
+        double asphalt = TrackWidthM * scale * zoom;
+        var trackPen = asphalt <= TrackPen.Thickness ? TrackPen
+            : Frozen(new Pen(TrackPen.Brush, asphalt) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round });
+        dc.DrawGeometry(null, trackPen, Path(basePath, P, detail));
+        if (_ref != null) dc.DrawGeometry(null, zoom > 2 ? Frozen(new Pen(RefPen.Brush, 2) { LineJoin = PenLineJoin.Round }) : RefPen, Path(_ref, P, detail));
 
         // Tu trazada coloreada: ganancia/pérdida respecto a la referencia, o velocidad si no hay referencia.
         double maxSpeed = Math.Max(1, _lap.Speed.Max()), minSpeed = _lap.Speed.Min();
-        int step = Math.Max(1, _lap.Count / 1500);
+        int step = detail;
         for (int i = step; i < _lap.Count; i += step)
         {
+            Point a = P(_lap.PosX[i - step], _lap.PosZ[i - step]), b = P(_lap.PosX[i], _lap.PosZ[i]);
+            if (!view.Contains(a) && !view.Contains(b)) continue;
             Color c;
             if (_cmp != null && _cmp.Delta.Length > 2)
             {
@@ -117,7 +203,7 @@ public sealed class TrackMapControl : FrameworkElement
             }
             var pen = new Pen(new SolidColorBrush(c), 2.4) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
             pen.Freeze();
-            dc.DrawLine(pen, P(_lap.PosX[i - step], _lap.PosZ[i - step]), P(_lap.PosX[i], _lap.PosZ[i]));
+            dc.DrawLine(pen, a, b);
         }
 
         // Puntos de frenada: tuyos (rojo) y de la referencia (aro naranja).
@@ -146,18 +232,18 @@ public sealed class TrackMapControl : FrameworkElement
             dc.DrawEllipse(Brushes.White, new Pen(Brushes.Black, 1.5), p, 6, 6);
         }
 
+        dc.Pop();
         string legend = _cmp != null ? "verde ganas · rojo pierdes · naranja ref." : "azul lento → rojo rápido";
-        var lt = Text(legend + " · ● frenadas", 10, Dim, dpi);
+        var lt = Text(legend + " · ● frenadas" + (zoom > 1 ? $" · ×{zoom:0.#}, doble clic: ver todo" : " · rueda: zoom"), 10, Dim, dpi);
         dc.DrawText(lt, new Point(8, h - lt.Height - 4));
     }
 
     private static Point At(LapData lap, double distance, Func<double, double, Point> p) =>
         p(LapAnalyzer.Interpolate(lap.Distance, lap.PosX, distance), LapAnalyzer.Interpolate(lap.Distance, lap.PosZ, distance));
 
-    private static StreamGeometry Path(LapData lap, Func<double, double, Point> p)
+    private static StreamGeometry Path(LapData lap, Func<double, double, Point> p, int step)
     {
         var g = new StreamGeometry();
-        int step = Math.Max(1, lap.Count / 1500);
         using (var c = g.Open())
         {
             c.BeginFigure(p(lap.PosX[0], lap.PosZ[0]), false, false);

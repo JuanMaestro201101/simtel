@@ -583,13 +583,19 @@ public partial class MainWindow : Window
     private void OnTipSelected(object sender, SelectionChangedEventArgs e)
     {
         if (TipList.SelectedItem is TipItem { Tip.Distance: double from } item)
+        {
             Chart.ZoomTo(from, item.Tip.DistanceTo ?? from + 200);
+            TrackMap.ZoomTo(from - 50, (item.Tip.DistanceTo ?? from + 200) + 50);
+        }
     }
 
     private void OnBrakeSelected(object sender, SelectionChangedEventArgs e)
     {
         if (BrakeList.SelectedItem is BrakeItem b)
+        {
             Chart.ZoomTo(b.Zone.StartDistance - 50, Math.Max(b.Zone.EndDistance, b.Zone.MinSpeedDistance) + 80);
+            TrackMap.ZoomTo(b.Zone.StartDistance - 80, Math.Max(b.Zone.EndDistance, b.Zone.MinSpeedDistance) + 120);
+        }
     }
 
 #if DEBUG
