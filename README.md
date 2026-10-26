@@ -1,4 +1,6 @@
-# SimTelemetry
+# APEX
+
+**Descarga para probar:** la última versión está en *Releases* (zip con todo incluido, sin instalar nada). Instrucciones en [LEEME.txt](LEEME.txt).
 
 App de Windows para grabar y analizar la telemetría de juegos de carreras. Incluye un overlay de acelerador y freno que se dibuja encima del juego, un entrenador de pedales y una guía de técnica.
 
@@ -15,22 +17,22 @@ La primera vez que cierras la ventana, la app pregunta qué hacer:
 
 | Juego | Cómo se lee | ¿Hay que configurar algo? |
 |---|---|---|
-| DiRT Rally, DiRT Rally 2.0, DiRT 4 | UDP 20777 (extradata 3) | Sí: botón en *Configurar juegos*, **con el juego cerrado** |
-| EA SPORTS WRC | UDP 20790 (estructura propia `simtelemetry`, con nombre del tramo, del rally y del coche) | Sí: botón en *Configurar juegos*, **con el juego cerrado** (vuelve a pulsarlo si la app avisa de una versión antigua) |
+| DiRT Rally, DiRT Rally 2.0, DiRT 4 | UDP 20777 (extradata 3) | Sí: botón en *Juegos*, **con el juego cerrado** |
+| EA SPORTS WRC | UDP 20790 (estructura propia `simtelemetry`, con nombre del tramo, del rally y del coche) | Sí: botón en *Juegos*, **con el juego cerrado** (vuelve a pulsarlo si la app avisa de una versión antigua) |
 | Forza Motorsport (2023) / 7, Forza Horizon 4 / 5 | UDP 5300 (formato *Car Dash*, en español «Aceleración de auto»; no «Trineo») | Sí: *Data Out* en el juego y, en la versión de Game Pass / Microsoft Store, el botón «Dar permiso de red a Forza» |
 | Assetto Corsa Competizione, Assetto Corsa | Memoria compartida | No. En ACC la longitud sale de la biblioteca de circuitos (o se mide sola en tu primera vuelta completa) y también se leen las presiones de los neumáticos |
 | iRacing | SDK oficial (memoria compartida) | No |
 | BeamNG.drive, Live for Speed | OutGauge UDP 4444 | Sí, en las opciones del juego |
 
-La app escucha todos los juegos a la vez y usa el que esté enviando datos. Si un juego compatible está abierto pero no envía telemetría, *En vivo* lo dice y explica qué activar. Si otro programa (SimHub…) ocupa un puerto, la app lo avisa y vuelve a intentarlo cada 10 s. Si un juego está en pista y en la pestaña *En vivo* su contador de paquetes no sube, el juego no está enviando datos. En *Configurar juegos → Comprobar* verás la causa: configuración, permiso o falta reiniciar el juego.
+La app escucha todos los juegos a la vez y usa el que esté enviando datos. Si un juego compatible está abierto pero no envía telemetría, *En vivo* lo dice y explica qué activar. Si otro programa (SimHub…) ocupa un puerto, la app lo avisa y vuelve a intentarlo cada 10 s. Si un juego está en pista y en la pestaña *En vivo* su contador de paquetes no sube, el juego no está enviando datos. En *Juegos → Comprobar* verás la causa: configuración, permiso o falta reiniciar el juego.
 
-Lo que ocurre (conexiones, cortes de vuelta, errores) queda en `%APPDATA%\SimTelemetry\log.txt`. Se abre desde *Configurar juegos → Abrir registro de diagnóstico*.
+Lo que ocurre (conexiones, cortes de vuelta, errores) queda en `%APPDATA%\SimTelemetry\log.txt`. Se abre desde *Juegos → Abrir registro de diagnóstico*.
 
 > Si abres la app desde otra aplicación empaquetada de Windows (por ejemplo, un enlace en Claude Desktop), Windows guarda sus ajustes y su registro en una copia aparte, dentro de `%LOCALAPPDATA%\Packages\…\LocalCache\Roaming\SimTelemetry`. Ábrela siempre desde el Explorador o desde un acceso directo.
 
 ## Qué hace
 
-La ventana tiene una barra lateral agrupada en Conducir (En vivo, Ingeniero), Analizar (Análisis, Progreso, Circuitos), Practicar (Entrenador, Aprender) y Ajustes (Overlay, Configurar juegos, Apariencia).
+La ventana tiene una barra de pestañas arriba, en cuatro grupos: Conducir (En vivo, Ingeniero), Analizar (Análisis, Progreso, Circuitos, Coches), Practicar (Entrenador, Aprender) y Ajustes (Overlay, Juegos, Apariencia).
 
 **Apariencia:** tema oscuro o claro y un color (naranja, rojo, rosa, morado, azul, turquesa, verde o el amarillo original).
 - El color se usa en botones, casillas, deslizadores y lo seleccionado, y el fondo de la ventana toma un tono de ese color.

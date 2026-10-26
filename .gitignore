@@ -3,7 +3,7 @@ bin/
 obj/
 dist/
 dist-nueva/
-release-amigo/
+release-*/
 *.zip
 # Editores
 .vs/

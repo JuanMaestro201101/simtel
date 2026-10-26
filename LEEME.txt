@@ -1,0 +1,57 @@
+APEX: versión de prueba
+=======================
+
+Telemetría y análisis de tus vueltas, overlay de pedales, ingeniero de carrera por voz y entrenador de pedales.
+Funciona con ACC, Assetto Corsa, iRacing, Forza, DiRT Rally 2.0 y EA SPORTS WRC.
+
+Requisitos: Windows 10 u 11 de 64 bits. No hay que instalar nada: la app lleva todo lo necesario dentro.
+
+
+CÓMO EMPEZAR
+------------
+1. Descomprime el zip en una carpeta (por ejemplo, Documentos\APEX). No la abras desde dentro del zip.
+2. Abre APEX.exe.
+   Windows puede mostrar «Windows protegió su PC», porque la app no está firmada:
+   pulsa «Más información» y luego «Ejecutar de todas formas».
+3. En la pestaña En vivo verás «Primeros pasos». Ahí tienes lo que falta y un botón para cada cosa.
+
+
+VOLANTE
+-------
+- Conecta el volante (antes o después de abrir la app: lo detecta sola).
+- Si es un PXN u otro volante con varios modos, ponlo en modo PC / D-input, no en modo Xbox / X-input.
+  En modo X-input Windows junta el acelerador y el freno en un solo eje, y la app no puede separarlos.
+  Cómo se cambia de modo depende del modelo: mira el manual o el software del fabricante.
+- Si Windows no lo reconoce, instala el driver o el software del fabricante desde su web oficial.
+- La primera vez: pestaña Entrenador, «Detectar pedales». Pisa cada pedal cuando te lo pida, sin tocar el ratón.
+- Si un pedal marca al revés (100 % con el pedal suelto), en el Entrenador están los botones
+  «⇅ Freno», «⇅ Acelerador» y «⇅ Embrague» para invertirlo.
+- El Entrenador tiene ejercicios de precisión de pedales que funcionan sin ningún juego abierto.
+
+
+JUEGOS
+------
+- ACC, Assetto Corsa e iRacing: no hay que configurar nada. Sal a pista.
+- DiRT Rally 2.0 y EA SPORTS WRC: en la pestaña «Juegos», pulsa el botón de cada juego
+  CON EL JUEGO CERRADO, y luego ábrelo.
+- Forza: en el juego, Ajustes → Interfaz y juego → Salida de datos:
+     Activada · IP 127.0.0.1 · Puerto 5300 · Formato «Aceleración de auto» (no «Trineo»).
+  Después cierra y vuelve a abrir Forza. En la versión de Xbox / Game Pass, pulsa también
+  «Dar permiso de red a Forza» en la pestaña «Juegos».
+- El overlay sólo se ve si el juego está en «ventana sin bordes» (no en pantalla completa exclusiva).
+
+
+INGENIERO DE VOZ
+----------------
+- Pestaña Ingeniero: pulsa «Probar sonido» y elige la voz (por ejemplo Raúl o Sabina) y el volumen.
+- Desde tu primera vuelta completa y limpia, te avisa antes de cada frenada («Frena fuerte, 90 por ciento, segunda»).
+  También te dice el tiempo de cada vuelta y dónde pierdes tiempo.
+- Si Windows no tiene ninguna voz en español, la app lo avisa: instálala en
+  Configuración → Hora e idioma → Voz → Agregar voces.
+- Con auriculares Bluetooth, pulsa «Auriculares Bluetooth» para adelantar los avisos.
+
+
+TUS DATOS
+---------
+- Las vueltas se guardan en Documentos\SimTelemetry (la app se llamaba así antes) y los ajustes en %APPDATA%\SimTelemetry.
+- Si algo falla: pestaña «Juegos» → «Abrir registro de diagnóstico», y adjunta ese archivo en un «Issue» del repositorio de GitHub (o mándalo a quien te pasó la app).
