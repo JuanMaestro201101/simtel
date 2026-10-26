@@ -13,7 +13,12 @@ namespace SimTelemetry.Analysis;
 /// </summary>
 public static class DrivingStyle
 {
-    public sealed record Trait(string Name, string Value, string Meaning, bool Good);
+    /// <summary>Un rasgo de tu estilo; <see cref="Axis"/> y <see cref="Score"/> (0–100) son su eje en el gráfico de atributos.</summary>
+    public sealed record Trait(string Name, string Value, string Meaning, bool Good)
+    {
+        public string Axis { get; init; } = "";
+        public double Score { get; init; } = double.NaN;
+    }
     public sealed record CarLine(string Game, string Car, string Category, int Laps, double BrakeScore, double Spread, double InvalidShare);
     /// <summary>Mejor vuelta válida de un coche en un circuito (la entrada de <see cref="PaceVerdicts"/>).</summary>
     public sealed record Best(string Game, string Track, string Category, string Car, double LapTime);
@@ -23,6 +28,8 @@ public static class DrivingStyle
         public int Laps;
         public string Headline = "";
         public List<Trait> Traits = new();
+        /// <summary>Media de los atributos (0–100).</summary>
+        public double Overall = double.NaN;
         public List<CarLine> Cars = new();
         public List<string> Verdicts = new();
     }
@@ -36,7 +43,12 @@ public static class DrivingStyle
         // shortcut: el estilo sale de tus 40 vueltas válidas más recientes (tu forma de conducir de ahora); si hiciera falta más historia, ampliar.
         var recent = Stats(valid.OrderByDescending(l => l.Date).Take(40));
         report.Laps = recent.Count;
-        if (recent.Count >= 3) (report.Headline, report.Traits) = Traits(recent);
+        if (recent.Count >= 3)
+        {
+            (report.Headline, report.Traits) = Traits(recent);
+            var scored = report.Traits.Where(t => !double.IsNaN(t.Score)).ToList();
+            if (scored.Count > 0) report.Overall = scored.Average(t => t.Score);
+        }
 
         foreach (var car in laps.GroupBy(l => (l.Game, l.Car)).Where(g => g.Key.Car.Length > 0))
         {
@@ -124,11 +136,34 @@ public static class DrivingStyle
         t.Add(new("Sueltas bruscas del freno", $"{abrupt:0.0} por vuelta", abrupt <= 1
             ? "Sueltas el freno con suavidad." : "Sueltas el freno de golpe: el coche se descompensa al entrar.", abrupt <= 1));
 
+        double spread = Spread(laps.Select(l => l.Info).ToList());
+        if (!double.IsNaN(spread))
+            t.Add(new("Constancia", $"±{spread:0.0} % entre tus vueltas buenas", spread <= 1
+                ? "Muy regular vuelta a vuelta." : "Tus tiempos varían bastante: fíjate referencias de frenada (carteles, pianos).", spread <= 1));
+
+        // Atributos 0–100 para el gráfico: 100 en el valor ideal y 0 en uno claramente malo (los umbrales son los de los consejos).
+        var axes = new Dictionary<string, (string Axis, double Score)>
+        {
+            ["Ataque al freno"] = ("ATAQUE", Score(attack, BrakeIdeals.MaxTimeToPeak, 0.60)),
+            ["Presión de frenada"] = ("PRESIÓN", Score(peak, minPeak, minPeak - 0.35)),
+            ["Trail braking"] = ("TRAIL BRAKING", Score(trail, 0.8, 0)),
+            ["Inercia sin pedales"] = ("FLUIDEZ", Score(coasting, 1, 12)),
+            ["Acelerador y freno a la vez"] = ("PRECISIÓN", Score(overlap, 0.5, 8)),
+            ["Correcciones de volante"] = ("SUAVIDAD", Score(corrections, 3, 30)),
+            ["Sueltas bruscas del freno"] = ("CONTROL", Score(abrupt, 0, 4)),
+            ["Constancia"] = ("CONSTANCIA", Score(spread, 0.4, 3)),
+        };
+        t = t.Select(x => axes.TryGetValue(x.Name, out var a) ? x with { Axis = a.Axis, Score = a.Score } : x).ToList();
+
         string headline = (double.IsNaN(attack) || attack <= BrakeIdeals.MaxTimeToPeak ? "Frenas con decisión" : "Frenas de forma progresiva") +
                           (double.IsNaN(trail) ? "" : trail >= 0.6 ? ", con mucho trail braking" : trail >= 0.3 ? ", con algo de trail braking" : ", soltando el freno antes de girar") +
                           (corrections <= 12 ? " y con manos suaves." : " y corrigiendo mucho el volante.");
         return (headline, t);
     }
+
+    /// <summary>De un valor a 0–100: 100 en <paramref name="best"/> (o mejor), 0 en <paramref name="worst"/> (o peor). Sirve en los dos sentidos.</summary>
+    public static double Score(double value, double best, double worst) =>
+        double.IsNaN(value) || best == worst ? double.NaN : Math.Clamp((value - worst) / (best - worst), 0, 1) * 100;
 
     /// <summary>
     /// Ritmo comparando sólo lo comparable: coches de la misma categoría en el mismo circuito (un GT4 siempre es más lento que un GT3).

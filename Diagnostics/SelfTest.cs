@@ -266,6 +266,9 @@ internal static class SelfTest
             new("ACC", "monza", "GT4", "alpine_a110_gt4", 90), new("ACC", "spa", "GT3", "ford_mustang_gt3", 140),
         });
         Check(pace.Count == 1 && pace[0].Contains("Mustang") && (pace[0].Contains("1,0 %") || pace[0].Contains("1.0 %")), "estilo: ritmo sólo en la misma categoría y circuito");
+        Check(Analysis.DrivingStyle.Score(0.2, 0.2, 0.6) == 100 && Analysis.DrivingStyle.Score(2, 0, 4) == 50 &&
+              Analysis.DrivingStyle.Score(0.9, 0.8, 0) == 100 && Analysis.DrivingStyle.Score(0.25, 0.5, 0) == 50 && double.IsNaN(Analysis.DrivingStyle.Score(double.NaN, 1, 0)),
+              "estilo: atributos 0–100 en los dos sentidos");
         Check(Tracks.CarAdviceBook.ForTrack("Assetto Corsa Competizione", "Spa").Any(a => a.Cars.Contains("Audi")) &&
               !Tracks.CarAdviceBook.ForTrack("Assetto Corsa Competizione", "Zolder").Any(), "coches: recomendación por circuito");
         Check(UI.TelemetryChart.AxisStep(296, 6) == 100 && UI.TelemetryChart.AxisStep(210, 3) == 100 && UI.TelemetryChart.AxisStep(6.96, 2) == 5,

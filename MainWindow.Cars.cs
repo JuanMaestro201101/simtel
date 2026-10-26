@@ -56,10 +56,26 @@ public partial class MainWindow
                 "Todavía no hay suficientes vueltas válidas (hacen falta 3) para describir tu estilo. Conduce unas vueltas limpias y vuelve aquí.")));
         else
         {
-            var headline = new TextBlock { Text = report.Headline, Style = (Style)FindResource("Figure"), FontSize = 22, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 8) };
-            left.Children.Add(GuideContent.Card("Tu estilo de manejo", headline,
+            var headline = new TextBlock { Text = report.Headline, Style = (Style)FindResource("Figure"), FontSize = 22, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+            var top = new DockPanel { Margin = new Thickness(0, 0, 0, 4) };
+            if (!double.IsNaN(report.Overall))
+            {
+                var overall = new StackPanel { Margin = new Thickness(16, 0, 0, 0) };
+                overall.Children.Add(new TextBlock { Text = $"{report.Overall:0}", Style = (Style)FindResource("Figure"), FontSize = 44, Foreground = Res("Accent"), HorizontalAlignment = HorizontalAlignment.Right });
+                overall.Children.Add(new TextBlock { Text = "GLOBAL", Style = (Style)FindResource("H2"), Margin = new Thickness(0), HorizontalAlignment = HorizontalAlignment.Right });
+                DockPanel.SetDock(overall, Dock.Right);
+                top.Children.Add(overall);
+            }
+            top.Children.Add(headline);
+            var radar = new RadarChart
+            {
+                Height = 330, Margin = new Thickness(0, 0, 0, 8),
+                Axes = report.Traits.Where(t => !double.IsNaN(t.Score)).Select(t => (t.Axis, t.Score)).ToList(),
+            };
+            left.Children.Add(GuideContent.Card("Tu estilo de manejo", top, radar,
                 GuideContent.Table(report.Traits.Select(t => (t.Name, $"{(t.Good ? "✔" : "▲")}  {t.Value}. {t.Meaning}")).ToArray()),
-                GuideContent.Para($"Sale de tus {report.Laps} vueltas válidas más recientes{(_app.Profile is { } p ? $" en {p.Name}" : "")}.")));
+                GuideContent.Para($"Sale de tus {report.Laps} vueltas válidas más recientes{(_app.Profile is { } p ? $" en {p.Name}" : "")}. " +
+                                  "Cada atributo va de 0 a 100: 100 es el valor ideal de la técnica y 0 uno claramente mejorable.")));
         }
 
         // Con qué coches rindes mejor
