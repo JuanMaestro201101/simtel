@@ -271,6 +271,20 @@ internal static class SelfTest
               "estilo: atributos 0–100 en los dos sentidos");
         Check(Tracks.CarAdviceBook.ForTrack("Assetto Corsa Competizione", "Spa").Any(a => a.Cars.Contains("Audi")) &&
               !Tracks.CarAdviceBook.ForTrack("Assetto Corsa Competizione", "Zolder").Any(), "coches: recomendación por circuito");
+        // BeamNG (sin vueltas en la telemetría): vueltas al volver al punto de salida, también saliendo de boxes.
+        static Telemetry.Sources.LoopLaps Drive(double startY, int laps)
+        {
+            var loop = new Telemetry.Sources.LoopLaps();
+            double t = 0, v = 30, dt = 0.05, r = 200, x = 0, y = startY;
+            for (; y < -r; y += v * dt, t += dt) loop.Update(t, x, y, v * dt); // recta desde boxes hasta el círculo
+            for (double a = 0; a < laps * 2 * Math.PI; a += v * dt / r, t += dt)
+                loop.Update(t, r * Math.Sin(a), -r * Math.Cos(a), v * dt);
+            return loop;
+        }
+        var onTrack = Drive(-200, 3);
+        Check(onTrack.Lap == 2 && Math.Abs(onTrack.LastLapTime - 2 * Math.PI * 200 / 30) < 0.3 && onTrack.Name != null, $"BeamNG: vueltas al pasar por la salida ({onTrack.Lap}, {onTrack.LastLapTime:0.0} s)");
+        var fromPits = Drive(-500, 4);
+        Check(fromPits.Lap >= 2 && Math.Abs(fromPits.LastLapTime - 2 * Math.PI * 200 / 30) < 0.3, $"BeamNG: vueltas saliendo de boxes ({fromPits.Lap}, {fromPits.LastLapTime:0.0} s)");
         Check(UI.TelemetryChart.AxisStep(296, 6) == 100 && UI.TelemetryChart.AxisStep(210, 3) == 100 && UI.TelemetryChart.AxisStep(6.96, 2) == 5,
             "marcas del eje: 100 km/h, 100 % de volante, marcha de 5 en 5");
 

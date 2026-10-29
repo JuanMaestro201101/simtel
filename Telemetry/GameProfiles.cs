@@ -33,7 +33,7 @@ public static class GameProfiles
         if (Has("Forza")) return Forza;
         if (Has("DiRT")) return Dirt;
         if (Has("WRC")) return Wrc;
-        if (Has("BeamNG") || Has("LFS") || Has("OutGauge")) return BeamNg;
+        if (Has("BeamNG") || Has("LFS") || Has("Live for Speed") || Has("OutGauge")) return BeamNg;
         return null;
     }
 

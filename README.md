@@ -22,7 +22,8 @@ La primera vez que cierras la ventana, la app pregunta qué hacer:
 | Forza Motorsport (2023) / 7, Forza Horizon 4 / 5 | UDP 5300 (formato *Car Dash*, en español «Aceleración de auto»; no «Trineo») | Sí: *Data Out* en el juego y, en la versión de Game Pass / Microsoft Store, el botón «Dar permiso de red a Forza» |
 | Assetto Corsa Competizione, Assetto Corsa | Memoria compartida | No. En ACC la longitud sale de la biblioteca de circuitos (o se mide sola en tu primera vuelta completa) y también se leen las presiones de los neumáticos |
 | iRacing | SDK oficial (memoria compartida) | No |
-| BeamNG.drive, Live for Speed | OutGauge UDP 4444 | Sí, en las opciones del juego |
+| BeamNG.drive | OutGauge + MotionSim, los dos al UDP 4444 (MotionSim da la posición: mapa y vueltas detectadas al volver al punto de salida) | Sí: *Opciones → Otros → Protocolos*, activar los dos con IP 127.0.0.1 |
+| Live for Speed | OutGauge UDP 4444 (sin posición: recorrido continuo) | Sí, en `cfg.txt` |
 
 La app escucha todos los juegos a la vez y usa el que esté enviando datos. Si un juego compatible está abierto pero no envía telemetría, *En vivo* lo dice y explica qué activar. Si otro programa (SimHub…) ocupa un puerto, la app lo avisa y vuelve a intentarlo cada 10 s. Si un juego está en pista y en la pestaña *En vivo* su contador de paquetes no sube, el juego no está enviando datos. En *Juegos → Comprobar* verás la causa: configuración, permiso o falta reiniciar el juego.
 

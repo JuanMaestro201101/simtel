@@ -6,6 +6,7 @@ Envía paquetes con el mismo formato que los juegos reales:
     python simulador.py --juego acc --vueltas 3        # circuito (ACC, memoria compartida)
     python simulador.py --juego dirt                   # tramo de rally (DiRT Rally 2.0, UDP)
     python simulador.py --juego wrc                    # tramo de rally (EA SPORTS WRC, UDP)
+    python simulador.py --juego beamng --vueltas 3     # circuito (BeamNG.drive: OutGauge + MotionSim al mismo puerto UDP)
 
 --rapidez N acelera el envío N veces (el tiempo del "juego" sigue siendo real).
 --nivel 0..1 hace al piloto mejor (frena más tarde, menos inercia): úsalo para simular progreso.
@@ -140,8 +141,8 @@ class AccMemory:
 
 def run(args):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    port = args.puerto or {"forza": 5300, "dirt": 20777, "wrc": 20790, "acc": 0}[args.juego]
-    circuit = args.juego in ("forza", "acc")
+    port = args.puerto or {"forza": 5300, "dirt": 20777, "wrc": 20790, "acc": 0, "beamng": 4444}[args.juego]
+    circuit = args.juego in ("forza", "acc", "beamng")
     length, corners = corners_for("circuito" if circuit else "tramo")
     styles = [
         dict(early_brake=0, slower_apex=0, coast=0, brake_force=0.95, brake_ramp=0.12, trail=True),
@@ -241,6 +242,18 @@ def run(args):
                 f[34], f[35], f[36], f[37] = lat_g, lon_g, 0.0, rpm / 10
                 f[61], f[62], f[63] = length, 0.0, 800.0
                 sock.sendto(struct.pack("<66f", *f), ("127.0.0.1", port))
+            elif args.juego == "beamng":
+                # OutGauge (96 bytes): pedales, marcha (0 = R, 1 = N, 2 = 1ª), velocidad en m/s y RPM.
+                og = struct.pack("<I4sHBBfffffffIIfff16s16si", 0, b"beam", 0, g + 1, 0, v, rpm, 0.0, 90.0, 0.5, 0.0, 90.0,
+                                 0, 0, thr, brk, 0.0, b"", b"", 0)
+                sock.sendto(og, ("127.0.0.1", port))
+                # MotionSim («BNG1», 88 bytes): posición y velocidad en el mundo (z hacia arriba), aceleración.
+                if not hasattr(run, "prev"):
+                    run.prev = (x, z)
+                vx, vy = (x - run.prev[0]) / DT, (z - run.prev[1]) / DT
+                run.prev = (x, z)
+                ms = struct.pack("<4s21f", b"BNG1", x, z, 0.0, vx, vy, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, *([0.0] * 9))
+                sock.sendto(ms, ("127.0.0.1", port))
             else:  # wrc (estructura simtelemetry v3: con posición y nombres)
                 pkt = struct.pack(
                     "<BB17ffddffHHHH",
@@ -265,7 +278,7 @@ def run(args):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--juego", choices=["forza", "acc", "dirt", "wrc"], default="forza")
+    ap.add_argument("--juego", choices=["forza", "acc", "dirt", "wrc", "beamng"], default="forza")
     ap.add_argument("--vueltas", type=int, default=3)
     ap.add_argument("--rapidez", type=float, default=1.0)
     ap.add_argument("--puerto", type=int, default=0)

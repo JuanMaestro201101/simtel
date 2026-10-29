@@ -896,7 +896,7 @@
                             <StackPanel>
                                 <TextBlock Text="BEAMNG.DRIVE · LIVE FOR SPEED (OUTGAUGE)" Style="{StaticResource H2}" />
                                 <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}"
-                                           Text="BeamNG: Opciones → Otros → Protocolos → OutGauge: activado, IP 127.0.0.1, puerto 4444. LFS: en cfg.txt pon OutGauge Mode 1, OutGauge IP 127.0.0.1, OutGauge Port 4444. Estos juegos no envían datos de vuelta, así que se graban como recorridos continuos." />
+                                           Text="BeamNG: Opciones → Otros → Protocolos: activa «OutGauge» y también «MotionSim», los dos con IP 127.0.0.1 y puerto 4444. OutGauge da pedales, marcha y velocidad; MotionSim, la posición: con ella la app dibuja el mapa y separa las vueltas sola cada vez que vuelves a pasar por donde empezaste (si sales de boxes, desde que cierras la primera vuelta). LFS: en cfg.txt pon OutGauge Mode 1, OutGauge IP 127.0.0.1, OutGauge Port 4444; LFS no envía posición, así que se graba como recorrido continuo." />
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource Card}">

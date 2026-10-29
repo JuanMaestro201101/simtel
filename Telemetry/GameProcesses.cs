@@ -31,7 +31,7 @@ public static class GameProcesses
         (new Regex("^acs$", RegexOptions.IgnoreCase), "Assetto Corsa", "assetto", "Sal a pista: AC sólo envía datos con el coche en pista."),
         (new Regex("^iracingsim", RegexOptions.IgnoreCase), "iRacing", "iracing", "Sal a pista: iRacing sólo envía datos con el coche en pista."),
         (new Regex("^beamng", RegexOptions.IgnoreCase), "BeamNG.drive", "outgauge",
-            "En BeamNG: Opciones → Otros → OutGauge activado, IP 127.0.0.1, puerto 4444."),
+            "En BeamNG: Opciones → Otros → Protocolos: activa OutGauge y MotionSim, los dos con IP 127.0.0.1 y puerto 4444."),
     };
 
     [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
