@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using SimTelemetry.Diagnostics;
 using SimTelemetry.UI;
@@ -24,6 +25,7 @@ public sealed class WheelDeviceState
 /// <summary>
 /// Lee volantes y pedales USB con DirectInput (la misma API que usan los juegos), también en segundo plano
 /// y sin ningún juego abierto. Detecta conexiones y desconexiones automáticamente.
+/// Los mandos tipo Xbox se leen además con XInput: DirectInput junta sus dos gatillos en un solo eje y no se pueden separar.
 /// </summary>
 public sealed class WheelInput : IDisposable
 {
@@ -32,9 +34,11 @@ public sealed class WheelInput : IDisposable
 
     private sealed class Device
     {
-        public required DeviceInstance Info;
+        public required string Name;
         public required string Id;
-        public required IDirectInputDevice8 Handle;
+        public DeviceInstance? Info;           // DirectInput
+        public IDirectInputDevice8? Handle;     // DirectInput
+        public int XIndex = -1;                 // XInput: número de mando (0–3)
         public required string?[] AxisNames;
         public required int SteeringAxis;
         public required bool IsWheel;
@@ -139,9 +143,9 @@ public sealed class WheelInput : IDisposable
         var attached = _di!.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly);
         bool changed = false;
 
-        foreach (var gone in _devices.Where(d => attached.All(a => a.InstanceGuid != d.Info.InstanceGuid)).ToList())
+        foreach (var gone in _devices.Where(d => d.Info != null && attached.All(a => a.InstanceGuid != d.Info.InstanceGuid)).ToList())
         {
-            Log.Info($"Volante/pedales desconectado: {gone.Info.ProductName}");
+            Log.Info($"Volante/pedales desconectado: {gone.Name}");
             Release(gone);
             _devices.Remove(gone);
             changed = true;
@@ -149,7 +153,7 @@ public sealed class WheelInput : IDisposable
 
         foreach (var info in attached)
         {
-            if (_devices.Any(d => d.Info.InstanceGuid == info.InstanceGuid)) continue;
+            if (_devices.Any(d => d.Info?.InstanceGuid == info.InstanceGuid)) continue;
             var device = Open(info);
             if (device == null) continue;
             _devices.Add(device);
@@ -158,12 +162,54 @@ public sealed class WheelInput : IDisposable
                      string.Join(", ", device.AxisNames.Select((n, i) => n == null ? null : $"{AxisLabels[i]}='{n}'").Where(s => s != null)));
         }
 
+        // Mandos XInput (Xbox, 8BitDo en modo X-input…). Preguntar por un hueco vacío es lento: sólo aquí, no en cada sondeo.
+        for (int i = 0; i < 4; i++)
+        {
+            bool connected = XInputGetState(i, out _) == 0;
+            var known = _devices.FirstOrDefault(d => d.XIndex == i);
+            if (connected && known == null)
+            {
+                var names = new string?[AxisCount];
+                names[0] = "Stick izquierdo (volante)";
+                names[2] = "Gatillo izquierdo (LT)";
+                names[5] = "Gatillo derecho (RT)";
+                _devices.Add(new Device { Name = $"Mando XInput {i + 1} (Xbox / modo X-input)", Id = $"xinput:{i}", XIndex = i, AxisNames = names, SteeringAxis = 0, IsWheel = false });
+                Log.Info($"Mando detectado por XInput: número {i + 1} (gatillos por separado)");
+                changed = true;
+            }
+            else if (!connected && known != null)
+            {
+                Log.Info($"Mando XInput {i + 1} desconectado");
+                _devices.Remove(known);
+                changed = true;
+            }
+        }
+
         if (changed)
         {
             PublishSnapshot();
             DevicesChanged?.Invoke();
         }
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct XInputGamepad
+    {
+        public ushort Buttons;
+        public byte LeftTrigger, RightTrigger;
+        public short ThumbLX, ThumbLY, ThumbRX, ThumbRY;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct XInputState
+    {
+        public uint PacketNumber;
+        public XInputGamepad Gamepad;
+    }
+
+    /// <summary>0 = conectado (ERROR_SUCCESS). xinput1_4 viene con Windows 8 y posteriores.</summary>
+    [DllImport("xinput1_4.dll")]
+    private static extern int XInputGetState(int userIndex, out XInputState state);
 
     private Device? Open(DeviceInstance info)
     {
@@ -195,7 +241,7 @@ public sealed class WheelInput : IDisposable
                                                                      || n.Contains("volante", StringComparison.OrdinalIgnoreCase)));
             if (steering < 0 && isWheel && names[0] != null) steering = 0;
 
-            return new Device { Info = info, Id = info.InstanceGuid.ToString(), Handle = handle, AxisNames = names, SteeringAxis = steering, IsWheel = isWheel };
+            return new Device { Name = info.ProductName.Trim(), Info = info, Id = info.InstanceGuid.ToString(), Handle = handle, AxisNames = names, SteeringAxis = steering, IsWheel = isWheel };
         }
         catch (Exception ex)
         {
@@ -207,6 +253,7 @@ public sealed class WheelInput : IDisposable
 
     private static void Release(Device d)
     {
+        if (d.Handle == null) return;
         try { d.Handle.Unacquire(); } catch { }
         d.Handle.Dispose();
     }
@@ -218,11 +265,20 @@ public sealed class WheelInput : IDisposable
         {
             try
             {
-                if (d.Handle.Poll().Failure) d.Handle.Acquire();
-                var s = d.Handle.GetCurrentJoystickState();
-                changed |= Set(d, 0, s.X) | Set(d, 1, s.Y) | Set(d, 2, s.Z)
-                         | Set(d, 3, s.RotationX) | Set(d, 4, s.RotationY) | Set(d, 5, s.RotationZ)
-                         | Set(d, 6, s.Sliders[0]) | Set(d, 7, s.Sliders[1]);
+                if (d.XIndex >= 0)
+                {
+                    if (XInputGetState(d.XIndex, out var x) != 0) { _enumerateRequested = true; continue; }
+                    // Mismo rango que DirectInput (0–65535): gatillos sueltos en 0, stick centrado en 32768.
+                    changed |= Set(d, 0, x.Gamepad.ThumbLX + 32768) | Set(d, 2, x.Gamepad.LeftTrigger * 257) | Set(d, 5, x.Gamepad.RightTrigger * 257);
+                }
+                else
+                {
+                    if (d.Handle!.Poll().Failure) d.Handle.Acquire();
+                    var s = d.Handle.GetCurrentJoystickState();
+                    changed |= Set(d, 0, s.X) | Set(d, 1, s.Y) | Set(d, 2, s.Z)
+                             | Set(d, 3, s.RotationX) | Set(d, 4, s.RotationY) | Set(d, 5, s.RotationZ)
+                             | Set(d, 6, s.Sliders[0]) | Set(d, 7, s.Sliders[1]);
+                }
                 if (!d.FirstPollDone)
                 {
                     d.FirstPollDone = true;
@@ -252,7 +308,7 @@ public sealed class WheelInput : IDisposable
         Clutch = clu;
         PedalsConnected = brakeOk && thrOk;
 
-        var wheel = _snapshot.FirstOrDefault(x => x.SteeringAxis >= 0);
+        var wheel = _snapshot.OrderByDescending(x => x.IsWheel).FirstOrDefault(x => x.SteeringAxis >= 0); // con volante y mando a la vez, manda el volante
         Steering = wheel != null ? Math.Clamp((wheel.Values[wheel.SteeringAxis] - 32767.5f) / 32767.5f, -1, 1) : 0;
 
         if (PedalsConnected && _shouldFeed()) _buffer.Add(thr, brk, clu, 0, 0, vehicleData: false);
@@ -270,7 +326,7 @@ public sealed class WheelInput : IDisposable
         _snapshot = _devices.Select(d => new WheelDeviceState
         {
             Id = d.Id,
-            Name = d.Info.ProductName.Trim(),
+            Name = d.Name,
             IsWheel = d.IsWheel,
             AxisNames = (string?[])d.AxisNames.Clone(),
             Values = (int[])d.Values.Clone(),

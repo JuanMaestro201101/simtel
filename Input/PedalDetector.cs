@@ -52,11 +52,11 @@ public sealed class PedalDetector
 
     public string Prompt => Current switch
     {
-        Step.GetReady => "Suelta todos los pedales…",
-        Step.Brake => WaitingForRelease ? "Bien. Ahora SUELTA el freno del todo" : "Pisa el FRENO a fondo y suéltalo",
-        Step.Throttle => WaitingForRelease ? "Bien. Ahora SUELTA el acelerador del todo" : "Ahora pisa el ACELERADOR a fondo y suéltalo",
+        Step.GetReady => "Suelta todos los pedales (o los gatillos del mando)…",
+        Step.Brake => WaitingForRelease ? "Bien. Ahora SUELTA el freno del todo" : "Pisa el FRENO a fondo y suéltalo (con mando: gatillo LT)",
+        Step.Throttle => WaitingForRelease ? "Bien. Ahora SUELTA el acelerador del todo" : "Ahora pisa el ACELERADOR a fondo y suéltalo (con mando: gatillo RT)",
         Step.Clutch => WaitingForRelease ? "Bien. Ahora SUELTA el embrague del todo"
-            : "Por último, pisa el EMBRAGUE a fondo y suéltalo (si no tienes, espera unos segundos)",
+            : "Por último, pisa el EMBRAGUE a fondo y suéltalo (si no tienes, o juegas con mando, espera unos segundos)",
         _ => "¡Pedales detectados!",
     };
 

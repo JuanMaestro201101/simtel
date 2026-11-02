@@ -13,6 +13,10 @@ La primera vez que cierras la ventana, la app pregunta qué hacer:
 - **Seguir en segundo plano:** queda en la bandeja del sistema y sigue grabando y mostrando el overlay.
 - **Cerrarse del todo:** se cierra también el overlay.
 
+## Volante o mando
+
+En pista los datos (pedales, volante, velocidad) los envía el juego, así que da igual con qué conduzcas. Fuera del juego (Entrenador, overlay sin juego) la app lee volantes y pedaleras USB con DirectInput y los mandos tipo Xbox con XInput: con mando, el gatillo LT es el freno y el RT el acelerador (DirectInput junta los dos gatillos en un solo eje, por eso se leen con XInput).
+
 ## Juegos compatibles
 
 | Juego | Cómo se lee | ¿Hay que configurar algo? |

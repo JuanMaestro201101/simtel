@@ -29,6 +29,13 @@ VOLANTE
 - El Entrenador tiene ejercicios de precisión de pedales que funcionan sin ningún juego abierto.
 
 
+MANDO (XBOX, 8BITDO…)
+---------------------
+- En pista no hay que configurar nada: los pedales, el volante y la velocidad los envía el juego, juegues con lo que juegues.
+- Para el Entrenador y el overlay sin juego: pon el mando en modo X-input (el modo Xbox; en 8BitDo suele ser el
+  interruptor «X») y en la pestaña Entrenador pulsa «Detectar pedales»: el gatillo LT es el freno y el RT el acelerador.
+  El embrague no hace falta: espera unos segundos y la detección termina sola.
+
 JUEGOS
 ------
 - ACC, Assetto Corsa e iRacing: no hay que configurar nada. Sal a pista.
