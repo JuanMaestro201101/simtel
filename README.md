@@ -1,6 +1,11 @@
 # APEX
 
-**Descarga para probar:** la última versión está en *Releases* (zip con todo incluido, sin instalar nada). Instrucciones en [LEEME.txt](LEEME.txt).
+## Para probadores
+
+1. **Descarga:** [última versión](https://github.com/JuanMaestro201101/simtel/releases/latest) → `APEX-1.1-windows.zip` (Windows 10/11 de 64 bits; no hay que instalar nada más).
+2. **Instala:** extrae el zip en una carpeta y abre `APEX.exe` (si Windows avisa: «Más información» → «Ejecutar de todas formas»).
+3. **Aprende a usarla:** **[tutorial completo con capturas](docs/TUTORIAL.md)**: configurar cada juego, volante o mando, y qué hace cada pestaña.
+4. **¿Algo falla?** Abre un [Issue](https://github.com/JuanMaestro201101/simtel/issues/new) con el registro de diagnóstico adjunto.
 
 App de Windows para grabar y analizar la telemetría de juegos de carreras. Incluye un overlay de acelerador y freno que se dibuja encima del juego, un entrenador de pedales y una guía de técnica.
 

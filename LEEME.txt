@@ -7,6 +7,9 @@ Funciona con ACC, Assetto Corsa, iRacing, Forza, DiRT Rally 2.0, EA SPORTS WRC y
 Requisitos: Windows 10 u 11 de 64 bits. No hay que instalar nada: la app lleva todo lo necesario dentro.
 
 
+Tutorial completo, con capturas de cada pestaña:
+https://github.com/JuanMaestro201101/simtel/blob/main/docs/TUTORIAL.md
+
 CÓMO EMPEZAR
 ------------
 1. Descomprime el zip en una carpeta (por ejemplo, Documentos\APEX). No la abras desde dentro del zip.
@@ -63,4 +66,4 @@ INGENIERO DE VOZ
 TUS DATOS
 ---------
 - Las vueltas se guardan en Documentos\SimTelemetry (la app se llamaba así antes) y los ajustes en %APPDATA%\SimTelemetry.
-- Si algo falla: pestaña «Juegos» → «Abrir registro de diagnóstico», y adjunta ese archivo en un «Issue» del repositorio de GitHub (o mándalo a quien te pasó la app).
+- Si algo falla: pestaña «Juegos» → «Abrir registro de diagnóstico», y adjunta ese archivo en un «Issue» en https://github.com/JuanMaestro201101/simtel/issues (o mándalo a quien te pasó la app).
