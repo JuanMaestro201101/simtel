@@ -13,19 +13,20 @@
                     <Image x:Name="LogoImage" Width="30" Height="30" Margin="0,0,10,0" />
                     <TextBlock Text="APEX" Style="{StaticResource Figure}" FontSize="26" VerticalAlignment="Center" />
                 </StackPanel>
-                <Border DockPanel.Dock="Right" HorizontalAlignment="Right" Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" Padding="12,5">
-                    <StackPanel Orientation="Horizontal">
-                        <Rectangle x:Name="StatusDot" Width="9" Height="9" Fill="{DynamicResource Off}" Margin="0,0,8,0" VerticalAlignment="Center" />
-                        <TextBlock x:Name="StatusText" Text="Esperando un juego…" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="28,0,12,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="28,0,12,0" DockPanel.Dock="Left">
                     <TextBlock Text="PERFIL" Style="{StaticResource H2}" Margin="0,0,10,0" VerticalAlignment="Center" />
                     <WrapPanel x:Name="ProfileChips" VerticalAlignment="Center" />
-                    <TextBlock x:Name="ProfileNote" Foreground="{DynamicResource Accent}" FontSize="11" VerticalAlignment="Center" Margin="2,0,10,0" />
-                    <CheckBox x:Name="AutoProfileCheck" Content="Cambiar solo al abrir un juego" FontSize="12" VerticalAlignment="Center" Margin="0"
-                              Checked="OnAutoProfileChanged" Unchecked="OnAutoProfileChanged" />
+                    <TextBlock x:Name="ProfileNote" Foreground="{DynamicResource Accent}" FontSize="11" VerticalAlignment="Center" Margin="2,0,6,0" />
+                    <ToggleButton x:Name="AutoProfileCheck" Content="AUTO" FontSize="12" Padding="8,3" VerticalAlignment="Center" Margin="4,0,0,0"
+                                  ToolTip="Cambiar de perfil solo al abrir un juego" Checked="OnAutoProfileChanged" Unchecked="OnAutoProfileChanged" />
                 </StackPanel>
+                <Border HorizontalAlignment="Right" Background="{DynamicResource PanelAlt}" BorderBrush="{DynamicResource Line}" BorderThickness="1" Padding="12,5">
+                    <DockPanel>
+                        <Rectangle x:Name="StatusDot" Width="9" Height="9" Fill="{DynamicResource Off}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="StatusText" Text="Esperando un juego…" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                   ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                    </DockPanel>
+                </Border>
             </DockPanel>
         </Border>
 
@@ -887,9 +888,16 @@
                         </Border>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <TextBlock Text="ASSETTO CORSA COMPETIZIONE · ASSETTO CORSA · IRACING" Style="{StaticResource H2}" />
+                                <TextBlock Text="ASSETTO CORSA COMPETIZIONE · ASSETTO CORSA" Style="{StaticResource H2}" />
                                 <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}"
                                            Text="No necesitan configuración: APEX lee su memoria compartida oficial en cuanto sales a pista. En ACC la longitud de cada circuito se mide sola en tu primera vuelta completa." />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="IRACING" Style="{StaticResource H2}" />
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource DimText}"
+                                           Text="No necesita configuración: APEX lee el SDK oficial de iRacing (memoria compartida) en cuanto sales a pista; en los menús y en las repeticiones iRacing no envía datos. Se graban pedales, volante, marcha, vueltas, sectores y fuerzas G, con análisis, ingeniero y overlay. iRacing no envía la posición del coche, así que en este juego no hay mapa de la trazada." />
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource Card}">

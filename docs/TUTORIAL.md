@@ -9,7 +9,7 @@ APEX graba la telemetría de tus juegos de carreras y te dice qué mejorar. Incl
 ## 1. Descarga
 
 1. Abre **[la última versión](https://github.com/JuanMaestro201101/simtel/releases/latest)**.
-2. En *Assets*, descarga **`APEX-1.1-windows.zip`** (unos 70 MB).
+2. En *Assets*, descarga **`APEX-windows.zip`** (unos 70 MB).
 
 **Requisitos:** Windows 10 u 11 de 64 bits. No hace falta instalar .NET ni nada más: el zip lo trae todo.
 
@@ -31,7 +31,8 @@ APEX no tiene instalador. Basta con descomprimir el zip:
 
 | Juego | Qué hacer |
 |---|---|
-| **Assetto Corsa Competizione, Assetto Corsa, iRacing** | Nada. Sal a pista y la app conecta sola. |
+| **Assetto Corsa Competizione, Assetto Corsa** | Nada. Sal a pista y la app conecta sola. |
+| **iRacing** | Nada. Sal a pista (en menús y repeticiones iRacing no envía datos). iRacing no envía la posición del coche, así que no hay mapa de la trazada; todo lo demás funciona. |
 | **DiRT Rally 2.0, EA SPORTS WRC** | Pestaña **JUEGOS** → botón del juego, **con el juego cerrado**. Después abre el juego. |
 | **Forza Motorsport / Horizon** | En el juego: *Ajustes → Interfaz y juego → Salida de datos*: **Activada**, IP `127.0.0.1`, puerto `5300`, formato **«Aceleración de auto»**. Cierra y vuelve a abrir Forza. En la versión de Game Pass / Microsoft Store pulsa también **«Dar permiso de red a Forza»** en **JUEGOS**. |
 | **BeamNG.drive** | *Opciones → Otros → Protocolos*: activa **OutGauge** y **MotionSim**, los dos con IP `127.0.0.1` y puerto `4444`. Las vueltas se separan solas cada vez que pasas por donde empezaste. |
@@ -50,7 +51,7 @@ El **overlay** (los pedales sobre el juego) solo se ve con el juego en **ventana
 
 ## 5. Recorrido por la app
 
-Arriba están el logo, el **perfil** del juego y el estado de la conexión. El perfil filtra lo que ves por juego; si marcas «Cambiar solo al abrir un juego», cambia solo. Debajo están las pestañas.
+Arriba están el logo, el **perfil** del juego y el estado de la conexión. El perfil (ACC, Assetto Corsa, iRacing, Forza, DiRT Rally, EA WRC, BeamNG) filtra lo que ves por juego; con **AUTO** activado cambia solo cuando abres un juego. Debajo están las pestañas.
 
 ### EN VIVO
 La primera vez verás **Primeros pasos**, con lo que te falta y un botón para cada cosa. Luego, mientras conduces: velocidad, marcha, RPM, tiempo de vuelta y una vista previa del overlay. A la derecha está la lista de juegos: el que está enviando datos se marca en verde.

@@ -228,7 +228,6 @@ public partial class MainWindow : Window
     private void OnLapSaved(LapInfo info)
     {
         NoteLapForOnboarding(info);
-        NoteLapForProfiles(info);
         LastLapText.Text = $"Última guardada: {info.Game} · vuelta {info.Number} · {info.TimeText}" +
                            (info.Completed ? "" : "  (incompleta)");
         _lapsDirty = true;

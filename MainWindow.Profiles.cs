@@ -14,14 +14,11 @@ namespace SimTelemetry;
 /// </summary>
 public partial class MainWindow
 {
-    private HashSet<string> _profilesWithData = new();
-
     private void InitProfiles()
     {
         _loading = true;
         AutoProfileCheck.IsChecked = _app.Settings.AutoProfile;
         _loading = false;
-        _profilesWithData = LapRecorder.ListLaps(_app.DataFolder).Select(l => GameProfiles.For(l.Game)?.Key).OfType<string>().ToHashSet();
         _app.ProfileChanged += () => Dispatcher.BeginInvoke(OnProfileChanged);
         RefreshProfileChips();
     }
@@ -32,7 +29,7 @@ public partial class MainWindow
     private void RefreshProfileChips()
     {
         var current = _app.Profile;
-        var shown = GameProfiles.All.Where(p => _profilesWithData.Contains(p.Key) || p == current).ToList();
+        var shown = GameProfiles.All;
         ProfileChips.Children.Clear();
         foreach (var p in shown.Prepend(null))
         {
@@ -71,11 +68,5 @@ public partial class MainWindow
         if (_loading) return;
         _app.Settings.AutoProfile = AutoProfileCheck.IsChecked == true;
         SaveSoon();
-    }
-
-    /// <summary>Una vuelta nueva de otro juego hace que aparezca su perfil en la cabecera.</summary>
-    private void NoteLapForProfiles(LapInfo info)
-    {
-        if (GameProfiles.For(info.Game)?.Key is string key && _profilesWithData.Add(key)) RefreshProfileChips();
     }
 }
